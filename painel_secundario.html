@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Operacional B2B · Secundário</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root{
+  --bg:#0a0e14; --surface:#121821; --surface-2:#1a2230; --border:#232c3b;
+  --border-2:#2e3a4d; --text:#e8edf4; --text-2:#8a96a8; --text-3:#5b6677;
+  --ok:#2ecc8f; --ok-bg:rgba(46,204,143,.12); --warn:#f5a623; --warn-bg:rgba(245,166,35,.12);
+  --crit:#ff5c5c; --crit-bg:rgba(255,92,92,.12); --accent:#f59e0b; --accent-2:#3b82f6;
+  --r:10px; --r-lg:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);
+  font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;padding:0 0 60px}
+.mono{font-family:'JetBrains Mono',monospace}
+.wrap{max-width:1280px;margin:0 auto;padding:0 24px}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:50;background:rgba(10,14,20,.85);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border)}
+.hd{display:flex;align-items:center;justify-content:space-between;height:68px}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#d97706);
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:#0a0e14}
+.brand h1{font-size:17px;font-weight:700;letter-spacing:-.2px}
+.brand .sub{font-size:11.5px;color:var(--text-2);font-weight:500;letter-spacing:.3px}
+.hd-right{display:flex;align-items:center;gap:12px}
+.pulse-tag{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--text-2);
+  background:var(--surface);padding:7px 13px;border-radius:20px;border:1px solid var(--border)}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(46,204,143,.5);
+  animation:beat 2s infinite}
+@keyframes beat{0%{box-shadow:0 0 0 0 rgba(46,204,143,.5)}70%{box-shadow:0 0 0 7px rgba(46,204,143,0)}100%{box-shadow:0 0 0 0 rgba(46,204,143,0)}}
+.btn{font-family:inherit;font-size:13px;font-weight:600;padding:9px 16px;border-radius:9px;
+  border:1px solid var(--border-2);background:var(--surface-2);color:var(--text);cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;transition:.15s;text-decoration:none}
+.btn:hover{background:var(--border);border-color:var(--text-3)}
+.btn-accent{background:var(--accent);border-color:var(--accent);color:#0a0e14}
+.btn-accent:hover{background:#fbbf3f}
+.btn svg{width:15px;height:15px}
+
+/* NAV */
+nav{display:flex;gap:4px;padding:14px 0;border-bottom:1px solid var(--border)}
+.tab{font-size:13.5px;font-weight:600;color:var(--text-2);padding:9px 18px;border-radius:9px;
+  cursor:pointer;transition:.15s;display:flex;align-items:center;gap:8px}
+.tab:hover{color:var(--text);background:var(--surface)}
+.tab.active{color:var(--text);background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--border-2)}
+.tab .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+
+/* SECTION */
+.section{padding:28px 0;display:none}
+.section.active{display:block}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:14px}
+.sec-title{font-size:20px;font-weight:700;letter-spacing:-.3px;display:flex;align-items:center;gap:11px}
+.sec-title .ico{width:32px;height:32px;border-radius:9px;background:var(--surface-2);
+  display:flex;align-items:center;justify-content:center;border:1px solid var(--border)}
+.sec-title .ico svg{width:17px;height:17px;color:var(--accent)}
+.sec-sub{font-size:12.5px;color:var(--text-2);margin-top:3px;font-weight:500}
+
+/* SUBTABS */
+.subtabs{display:flex;gap:6px;background:var(--surface);padding:4px;border-radius:10px;border:1px solid var(--border)}
+.subtab{font-size:12.5px;font-weight:600;color:var(--text-2);padding:7px 16px;border-radius:7px;cursor:pointer;transition:.12s}
+.subtab:hover{color:var(--text)}
+.subtab.active{background:var(--surface-2);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+
+/* KPI CARDS */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:24px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;
+  position:relative;overflow:hidden;transition:.18s}
+.kpi:hover{border-color:var(--border-2);transform:translateY(-2px)}
+.kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--text-3)}
+.kpi.s-ok::before{background:var(--ok)}.kpi.s-warn::before{background:var(--warn)}.kpi.s-crit::before{background:var(--crit)}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.kpi-label{font-size:11.5px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.6px}
+.kpi-badge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px}
+.kpi-badge.s-ok{background:var(--ok-bg);color:var(--ok)}
+.kpi-badge.s-warn{background:var(--warn-bg);color:var(--warn)}
+.kpi-badge.s-crit{background:var(--crit-bg);color:var(--crit)}
+.kpi-val{font-size:34px;font-weight:700;letter-spacing:-1px;line-height:1}
+.kpi-val .unit{font-size:17px;color:var(--text-2);font-weight:500;margin-left:2px}
+.kpi-meta{display:flex;align-items:center;justify-content:space-between;margin-top:14px;
+  padding-top:13px;border-top:1px solid var(--border)}
+.kpi-meta-label{font-size:11px;color:var(--text-3);font-weight:500}
+.kpi-meta-val{font-size:12px;font-weight:600;color:var(--text-2)}
+.kpi-bar{height:5px;background:var(--surface-2);border-radius:3px;margin-top:11px;overflow:hidden}
+.kpi-bar i{display:block;height:100%;border-radius:3px;transition:.5s}
+.kpi-bar i.s-ok{background:var(--ok)}.kpi-bar i.s-warn{background:var(--warn)}.kpi-bar i.s-crit{background:var(--crit)}
+
+/* CHART CARDS */
+.chart-row{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:18px}
+@media(max-width:880px){.chart-row{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px}
+.card-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.card-sub{font-size:11.5px;color:var(--text-2);margin-bottom:18px;font-weight:500}
+.chart-box{position:relative;height:260px}
+
+/* MODAL METAS */
+.overlay{position:fixed;inset:0;background:rgba(5,8,12,.7);backdrop-filter:blur(4px);z-index:100;
+  display:none;align-items:flex-start;justify-content:center;padding:50px 20px;overflow-y:auto}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border-2);border-radius:18px;
+  max-width:680px;width:100%;animation:rise .25s ease}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.modal-head{padding:22px 26px;border-bottom:1px solid var(--border);display:flex;
+  align-items:center;justify-content:space-between}
+.modal-head h2{font-size:17px;font-weight:700}
+.modal-head p{font-size:12px;color:var(--text-2);margin-top:2px}
+.close-x{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);
+  color:var(--text-2);cursor:pointer;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center}
+.close-x:hover{color:var(--text);background:var(--border)}
+.modal-body{padding:22px 26px;max-height:60vh;overflow-y:auto}
+.meta-group{margin-bottom:24px}
+.meta-group-title{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;
+  letter-spacing:.7px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.meta-group-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.meta-row{display:grid;grid-template-columns:1fr 130px;gap:12px;align-items:center;margin-bottom:11px}
+.meta-row label{font-size:13px;font-weight:500}
+.meta-row label small{display:block;font-size:11px;color:var(--text-3);font-weight:400;margin-top:1px}
+.meta-input{display:flex;align-items:center;background:var(--surface-2);border:1px solid var(--border-2);
+  border-radius:8px;overflow:hidden}
+.meta-input input{flex:1;width:100%;background:transparent;border:none;color:var(--text);
+  font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;padding:9px 11px;text-align:right;outline:none}
+.meta-input input:focus{background:rgba(245,158,11,.06)}
+.meta-input .unit{font-size:12px;color:var(--text-2);font-weight:600;padding:0 11px;border-left:1px solid var(--border)}
+.modal-foot{padding:18px 26px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-foot .hint{font-size:11.5px;color:var(--text-3)}
+
+/* UPLOAD */
+.upload-zone{border:1.5px dashed var(--border-2);border-radius:var(--r-lg);padding:26px;text-align:center;
+  background:var(--surface);cursor:pointer;transition:.15s;margin-bottom:24px}
+.upload-zone:hover{border-color:var(--accent);background:var(--surface-2)}
+.upload-zone svg{width:30px;height:30px;color:var(--text-2);margin-bottom:8px}
+.upload-zone p{font-size:13px;font-weight:600}
+.upload-zone span{font-size:11.5px;color:var(--text-3)}
+input[type=file]{display:none}
+.legend{display:flex;gap:18px;margin-top:6px;flex-wrap:wrap}
+.legend span{font-size:11.5px;color:var(--text-2);display:flex;align-items:center;gap:6px;font-weight:500}
+.legend i{width:10px;height:10px;border-radius:3px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap hd">
+    <div class="brand">
+      <div class="logo">A</div>
+      <div>
+        <h1>Painel Operacional B2B</h1>
+        <div class="sub">SECUNDÁRIO · MCLL · Multi-Estado</div>
+      </div>
+    </div>
+    <div class="hd-right">
+      <div class="pulse-tag"><span class="pulse"></span> Monitoramento ativo</div>
+      <a href="painel_atrix.html" class="btn" title="Ir para Painel B2B Abertos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        B2B Abertos
+      </a>
+      <button class="btn" onclick="openMetas()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Metas
+      </button>
+      <button class="btn btn-accent" onclick="exportPNG()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Exportar
+      </button>
+    </div>
+  </div>
+  <div class="wrap">
+    <nav>
+      <div class="tab active" data-tab="rede" onclick="switchTab('rede')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        Rede
+      </div>
+      <div class="tab" data-tab="b2b" onclick="switchTab('b2b')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        B2B
+      </div>
+      <div class="tab" data-tab="combustivel" onclick="switchTab('combustivel')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 22h12V4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/><path d="M15 9h2a2 2 0 0 1 2 2v6a1.5 1.5 0 0 0 3 0V8l-3-3"/><line x1="6" y1="7" x2="12" y2="7"/></svg>
+        Combustível
+      </div>
+      <div class="tab" data-tab="ofs" onclick="switchTab('ofs')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        OFS
+      </div>
+      <div class="tab" data-tab="dados" onclick="switchTab('dados')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+        Dados
+      </div>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap" id="capture">
+
+<!-- ===== REDE ===== -->
+<section class="section active" data-section="rede">
+  <div class="sec-head">
+    <div>
+      <div class="sec-title">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg></span>
+        Performance de Rede
+      </div>
+      <div class="sec-sub" id="rede-sub">Backbone → Prazo, TME e Outlier vs metas configuradas</div>
+    </div>
+    <div class="subtabs">
+      <div class="subtab active" onclick="switchRede('backbone')">Backbone</div>
+      <div class="subtab" onclick="switchRede('acesso')">Acesso</div>
+    </div>
+  </div>
+  <div class="kpi-grid" id="rede-kpis"></div>
+  <div class="chart-row">
+    <div class="card">
+      <div class="card-title">Evolução do Prazo de Atendimento</div>
+      <div class="card-sub">Percentual dentro do SLA por período · linha de meta destacada</div>
+      <div class="chart-box"><canvas id="redeTrend"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Distribuição de Outliers</div>
+      <div class="card-sub">Casos fora do padrão por cluster</div>
+      <div class="chart-box"><canvas id="redeOutlier"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== B2B ===== -->
+<section class="section" data-section="b2b">
+  <div class="sec-head">
+    <div>
+      <div class="sec-title">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
+        Tickets B2B
+      </div>
+      <div class="sec-sub" id="b2b-sub">Encerrados → Prazo, faixas de atraso e outlier</div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <select id="slaClock" onchange="changeClock()" style="font-family:inherit;font-size:12.5px;font-weight:600;background:var(--surface-2);color:var(--text);border:1px solid var(--border-2);border-radius:8px;padding:7px 10px;cursor:pointer">
+        <option value="tempo_ccs">Relógio: tempo_ccs</option>
+        <option value="tempo_b2b">Relógio: tempo_b2b</option>
+        <option value="tempo_giga">Relógio: tempo_giga</option>
+        <option value="tempoccs_campo">Relógio: ccs_campo</option>
+        <option value="tempo_total">Relógio: tempo_total</option>
+      </select>
+      <div class="subtabs">
+        <div class="subtab" onclick="switchB2B('abertos')">Abertos</div>
+        <div class="subtab active" onclick="switchB2B('encerrados')">Encerrados</div>
+        <div class="subtab" onclick="switchB2B('repetidos')">Repetidos</div>
+      </div>
+    </div>
+  </div>
+  <div class="kpi-grid" id="b2b-kpis"></div>
+  <div class="chart-row">
+    <div class="card">
+      <div class="card-title">Tickets Fora do Prazo por Faixa</div>
+      <div class="card-sub">Distribuição entre Faixa 1 e Faixa 2 ao longo do tempo</div>
+      <div class="chart-box"><canvas id="b2bFaixa"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Composição do Prazo</div>
+      <div class="card-sub">Dentro do prazo vs faixas de atraso</div>
+      <div class="chart-box"><canvas id="b2bDonut"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== COMBUSTÍVEL ===== -->
+<section class="section" data-section="combustivel">
+  <div class="sec-head">
+    <div>
+      <div class="sec-title">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 22h12V4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/><path d="M15 9h2a2 2 0 0 1 2 2v6a1.5 1.5 0 0 0 3 0V8l-3-3"/><line x1="6" y1="7" x2="12" y2="7"/></svg></span>
+        Combustível &amp; Frota
+      </div>
+      <div class="sec-sub">Consumo real vs balizador cadastrado · eficiência e desvios</div>
+    </div>
+  </div>
+  <div class="kpi-grid" id="fuel-kpis"></div>
+  <div class="chart-row">
+    <div class="card">
+      <div class="card-title">Consumo Realizado vs Balizador</div>
+      <div class="card-sub">Litros por estado · barra cinza = limite cadastrado</div>
+      <div class="chart-box"><canvas id="fuelComp"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Distribuição do Consumo</div>
+      <div class="card-sub">Participação de cada estado no total</div>
+      <div class="chart-box"><canvas id="fuelDonut"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== OFS ===== -->
+<section class="section" data-section="ofs">
+  <div class="sec-head">
+    <div>
+      <div class="sec-title">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+        Produtividade de Campo (OFS)
+      </div>
+      <div class="sec-sub">Produtividade, conclusão, TMA e ordens improdutivas</div>
+    </div>
+  </div>
+  <div class="kpi-grid" id="ofs-kpis"></div>
+  <div class="chart-row">
+    <div class="card">
+      <div class="card-title">Evolução da Produtividade</div>
+      <div class="card-sub">OS por técnico/dia · linha de meta destacada</div>
+      <div class="chart-box"><canvas id="ofsTrend"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Status das Ordens de Serviço</div>
+      <div class="card-sub">Concluídas, reagendadas e improdutivas</div>
+      <div class="chart-box"><canvas id="ofsDonut"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DADOS ===== -->
+<section class="section" data-section="dados">
+  <div class="sec-head">
+    <div>
+      <div class="sec-title">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span>
+        Fonte de Dados
+      </div>
+      <div class="sec-sub">Carregue a base operacional (.xlsx) para alimentar o painel</div>
+    </div>
+  </div>
+  <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <p>Clique para carregar base .xlsx</p>
+    <span id="upload-status">Dados reais carregados (Rede, B2B Encerrados, OFS) · recarregue para atualizar</span>
+  </div>
+  <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(event)">
+  <div class="card">
+    <div class="card-title">Bases reconhecidas automaticamente</div>
+    <div class="card-sub">O painel calcula os KPIs a partir das bases cruas (linha a linha)</div>
+    <div style="font-size:12.5px;color:var(--text-2);line-height:1.9">
+      <strong style="color:var(--text)">Rede:</strong> abas <code>BACKBONE</code> e <code>Planilha1</code>/Acesso · colunas PRAZO, OUTLIER, TMR/TME, UF, DATA_ABERTURA<br>
+      <strong style="color:var(--text)">B2B:</strong> aba <code>BASE ENCERRADO</code> · relógio de SLA selecionável (tempo_ccs, tempo_b2b…), idservico para reincidência, data_fechamento<br>
+      <strong style="color:var(--text)">OFS:</strong> abas <code>Resumo_Recurso</code> e <code>Resumo_Data</code> · status concluído/pendente/suspenso/cancelado/não concluído<br>
+      <strong style="color:var(--text)">Combustível:</strong> aba com "combust"/"frota" · efic_kml, baliz_pct, desvio_pct, estado, consumo_real, balizador
+    </div>
+  </div>
+</section>
+
+</div>
+
+<!-- ===== MODAL METAS ===== -->
+<div class="overlay" id="metasOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2>Configuração de Metas</h2>
+        <p>Defina os limites de cada indicador. Os KPIs recolorem automaticamente.</p>
+      </div>
+      <button class="close-x" onclick="closeMetas()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="meta-group">
+        <div class="meta-group-title">Rede — Backbone</div>
+        <div class="meta-row"><label>Prazo <small>mínimo dentro do SLA</small></label><div class="meta-input"><input type="number" step="0.1" id="m_bb_prazo"><span class="unit">% ≥</span></div></div>
+        <div class="meta-row"><label>TME <small>tempo médio máximo</small></label><div class="meta-input"><input type="number" step="0.1" id="m_bb_tme"><span class="unit">h ≤</span></div></div>
+        <div class="meta-row"><label>Outlier <small>limite de casos fora do padrão</small></label><div class="meta-input"><input type="number" step="0.1" id="m_bb_outlier"><span class="unit">% ≤</span></div></div>
+      </div>
+      <div class="meta-group">
+        <div class="meta-group-title">Rede — Acesso</div>
+        <div class="meta-row"><label>Prazo <small>mínimo dentro do SLA</small></label><div class="meta-input"><input type="number" step="0.1" id="m_ac_prazo"><span class="unit">% ≥</span></div></div>
+        <div class="meta-row"><label>TME <small>tempo médio máximo</small></label><div class="meta-input"><input type="number" step="0.1" id="m_ac_tme"><span class="unit">h ≤</span></div></div>
+        <div class="meta-row"><label>Outlier <small>limite de casos fora do padrão</small></label><div class="meta-input"><input type="number" step="0.1" id="m_ac_outlier"><span class="unit">% ≤</span></div></div>
+      </div>
+      <div class="meta-group">
+        <div class="meta-group-title">B2B — Tickets</div>
+        <div class="meta-row"><label>Prazo <small>mínimo dentro do SLA</small></label><div class="meta-input"><input type="number" step="0.1" id="m_b2b_prazo"><span class="unit">% ≥</span></div></div>
+        <div class="meta-row"><label>Fora do Prazo · Faixa 1 <small>limite atraso leve</small></label><div class="meta-input"><input type="number" step="0.1" id="m_b2b_faixa1"><span class="unit">% ≤</span></div></div>
+        <div class="meta-row"><label>Fora do Prazo · Faixa 2 <small>limite atraso grave</small></label><div class="meta-input"><input type="number" step="0.1" id="m_b2b_faixa2"><span class="unit">% ≤</span></div></div>
+        <div class="meta-row"><label>Outlier <small>limite de casos fora do padrão</small></label><div class="meta-input"><input type="number" step="0.1" id="m_b2b_outlier"><span class="unit">% ≤</span></div></div>
+      </div>
+      <div class="meta-group">
+        <div class="meta-group-title">Combustível &amp; Frota</div>
+        <div class="meta-row"><label>Eficiência <small>rendimento mínimo</small></label><div class="meta-input"><input type="number" step="0.1" id="m_fuel_efic"><span class="unit">km/L ≥</span></div></div>
+        <div class="meta-row"><label>Dentro do balizador <small>frota dentro do limite</small></label><div class="meta-input"><input type="number" step="0.1" id="m_fuel_baliz"><span class="unit">% ≥</span></div></div>
+        <div class="meta-row"><label>Desvio de consumo <small>acima do balizador</small></label><div class="meta-input"><input type="number" step="0.1" id="m_fuel_desvio"><span class="unit">% ≤</span></div></div>
+      </div>
+      <div class="meta-group">
+        <div class="meta-group-title">Produtividade OFS</div>
+        <div class="meta-row"><label>Produtividade <small>OS por técnico/dia</small></label><div class="meta-input"><input type="number" step="0.1" id="m_ofs_prod"><span class="unit">OS ≥</span></div></div>
+        <div class="meta-row"><label>Taxa de conclusão <small>OS concluídas</small></label><div class="meta-input"><input type="number" step="0.1" id="m_ofs_concl"><span class="unit">% ≥</span></div></div>
+        <div class="meta-row"><label>Pendentes <small>limite de OS pendentes</small></label><div class="meta-input"><input type="number" step="0.1" id="m_ofs_pend"><span class="unit">% ≤</span></div></div>
+        <div class="meta-row"><label>Improdutivas <small>limite de OS improdutivas</small></label><div class="meta-input"><input type="number" step="0.1" id="m_ofs_improd"><span class="unit">% ≤</span></div></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <span class="hint">As metas ficam salvas neste navegador</span>
+      <div style="display:flex;gap:10px">
+        <button class="btn" onclick="resetMetas()">Restaurar padrão</button>
+        <button class="btn btn-accent" onclick="saveMetas()">Salvar metas</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ METAS ============ */
+const DEFAULT_METAS = {
+  bb:{prazo:88.9, tme:6.0, outlier:4.9},
+  ac:{prazo:88.9, tme:6.0, outlier:4.9},
+  b2b:{prazo:88.9, faixa1:7.0, faixa2:4.0, outlier:4.9},
+  fuel:{efic:8.0, baliz:90.0, desvio:5.0},
+  ofs:{prod:2.0, concl:80.0, pend:15.0, improd:8.0}
+};
+let metas = loadMetas();
+function loadMetas(){
+  try{const s=localStorage.getItem('painel_metas_sec');return s?JSON.parse(s):structuredClone(DEFAULT_METAS)}
+  catch(e){return structuredClone(DEFAULT_METAS)}
+}
+function fillMetaInputs(){
+  m_bb_prazo.value=metas.bb.prazo; m_bb_tme.value=metas.bb.tme; m_bb_outlier.value=metas.bb.outlier;
+  m_ac_prazo.value=metas.ac.prazo; m_ac_tme.value=metas.ac.tme; m_ac_outlier.value=metas.ac.outlier;
+  m_b2b_prazo.value=metas.b2b.prazo; m_b2b_faixa1.value=metas.b2b.faixa1;
+  m_b2b_faixa2.value=metas.b2b.faixa2; m_b2b_outlier.value=metas.b2b.outlier;
+  m_fuel_efic.value=metas.fuel.efic; m_fuel_baliz.value=metas.fuel.baliz; m_fuel_desvio.value=metas.fuel.desvio;
+  m_ofs_prod.value=metas.ofs.prod; m_ofs_concl.value=metas.ofs.concl;
+  m_ofs_pend.value=metas.ofs.pend; m_ofs_improd.value=metas.ofs.improd;
+}
+function openMetas(){fillMetaInputs();metasOverlay.classList.add('open')}
+function closeMetas(){metasOverlay.classList.remove('open')}
+function saveMetas(){
+  metas={
+    bb:{prazo:+m_bb_prazo.value, tme:+m_bb_tme.value, outlier:+m_bb_outlier.value},
+    ac:{prazo:+m_ac_prazo.value, tme:+m_ac_tme.value, outlier:+m_ac_outlier.value},
+    b2b:{prazo:+m_b2b_prazo.value, faixa1:+m_b2b_faixa1.value, faixa2:+m_b2b_faixa2.value, outlier:+m_b2b_outlier.value},
+    fuel:{efic:+m_fuel_efic.value, baliz:+m_fuel_baliz.value, desvio:+m_fuel_desvio.value},
+    ofs:{prod:+m_ofs_prod.value, concl:+m_ofs_concl.value, pend:+m_ofs_pend.value, improd:+m_ofs_improd.value}
+  };
+  localStorage.setItem('painel_metas_sec',JSON.stringify(metas));
+  closeMetas(); renderRede(); renderB2B(); renderFuel(); renderOFS();
+}
+function resetMetas(){metas=structuredClone(DEFAULT_METAS);fillMetaInputs()}
+metasOverlay.addEventListener('click',e=>{if(e.target===metasOverlay)closeMetas()});
+
+/* ============ DADOS DEMO ============ */
+let DATA = {
+  rede:{
+    backbone:{prazo:78.9, tme:8.43, outlier:7.7, n:467,
+      trend:{labels:['S19','S20','S21','S22','S23','S24','S25'],vals:[84.2,83.3,73.3,60.9,75.0,86.4,91.7]},
+      outliers:[{c:'MA',v:19},{c:'PA',v:10},{c:'PI',v:7},{c:'AM',v:0},{c:'AP',v:0}]},
+    acesso:{prazo:84.8, tme:5.94, outlier:9.8, n:1650,
+      trend:{labels:['S19','S20','S21','S22','S23','S24','S25'],vals:[93.4,93.3,83.5,86.2,92.9,91.0,90.3]},
+      outliers:[{c:'MA',v:150},{c:'PA',v:1},{c:'PI',v:11},{c:'AM',v:0},{c:'AP',v:0}]}
+  },
+  b2b:{
+    abertos:{prazo:0, faixa1:0, faixa2:0, outlier:0, semDados:true,
+      faixaTrend:{labels:['—'],f1:[0],f2:[0]}},
+    encerrados:{prazo:54.0, faixa1:37.3, faixa2:8.7, outlier:1.6, n:1644,
+      faixaTrend:{labels:['S19','S20','S21','S22','S23','S24','S25'],
+        f1:[44.1,38.2,23.9,44.3,58.8,44.4,20.0],f2:[1.7,7.9,4.2,19.3,5.9,11.1,40.0]}},
+    repetidos:{prazo:54.5, faixa1:37.3, faixa2:8.1, outlier:1.2, reincidencia:43.0, tickets:1122,
+      faixaTrend:{labels:['S19','S20','S21','S22','S23','S24','S25'],
+        f1:[44.1,38.2,23.9,44.3,58.8,44.4,20.0],f2:[1.7,7.9,4.2,19.3,5.9,11.1,40.0]}}
+  },
+  combustivel:{
+    efic:8.6, baliz:88.0, desvio:5.4,
+    porEstado:[{c:'MA',real:4720,bal:4500},{c:'PA',real:2710,bal:2800},
+      {c:'PI',real:1850,bal:1900},{c:'AM',real:2240,bal:2100},{c:'AP',real:860,bal:900}]
+  },
+  ofs:{
+    prod:2.08, concl:65.6, pend:19.1, improd:5.3, tecnicos:17, dias:34,
+    prodTrend:{labels:['01/06','02/06','03/06','04/06','05/06','06/06','07/06'],
+      vals:[62.5,76.9,68.8,42.9,93.3,70.0,0.0]},
+    statusOS:{concluidas:1202,pendentes:350,suspensas:71,improdutivas:97}
+  }
+};
+
+/* ============ STATUS ENGINE ============ */
+function status(val, meta, dir){
+  if(dir==='>='){
+    if(val>=meta) return 'ok';
+    if(val>=meta*0.95) return 'warn';
+    return 'crit';
+  }else{
+    if(val<=meta) return 'ok';
+    if(val<=meta*1.15) return 'warn';
+    return 'crit';
+  }
+}
+const STBADGE={ok:'Meta atingida',warn:'Atenção',crit:'Crítico'};
+function pctBar(val,meta,dir){
+  let p;
+  if(dir==='>=') p=Math.min(100,(val/meta)*100);
+  else p=Math.min(100,Math.max(0,(1-(val-0)/(meta*2))*100*(val<=meta?1:0.6)));
+  return Math.round(p);
+}
+function kpiCard(label, val, unit, meta, dir, metaLabel){
+  const st=status(val,meta,dir);
+  const barP=pctBar(val,meta,dir);
+  return `<div class="kpi s-${st}">
+    <div class="kpi-top">
+      <span class="kpi-label">${label}</span>
+      <span class="kpi-badge s-${st}">${STBADGE[st]}</span>
+    </div>
+    <div class="kpi-val mono">${val.toFixed(1)}<span class="unit">${unit}</span></div>
+    <div class="kpi-bar"><i class="s-${st}" style="width:${barP}%"></i></div>
+    <div class="kpi-meta">
+      <span class="kpi-meta-label">${metaLabel}</span>
+      <span class="kpi-meta-val mono">${meta.toFixed(1)}${unit}</span>
+    </div>
+  </div>`;
+}
+
+/* ============ RENDER REDE ============ */
+let redeMode='backbone', charts={};
+function switchRede(mode){
+  redeMode=mode;
+  document.querySelectorAll('[data-section=rede] .subtab').forEach((t,i)=>
+    t.classList.toggle('active',(i===0)===(mode==='backbone')));
+  document.getElementById('rede-sub').textContent=
+    (mode==='backbone'?'Backbone':'Acesso')+' → Prazo, TME e Outlier vs metas configuradas';
+  renderRede();
+}
+function renderRede(){
+  const d=DATA.rede[redeMode], m=metas[redeMode==='backbone'?'bb':'ac'];
+  document.getElementById('rede-kpis').innerHTML=
+    kpiCard('Prazo SLA', d.prazo,'%', m.prazo,'>=','Meta mínima')+
+    kpiCard('TME', d.tme,'h', m.tme,'<=','Meta máxima')+
+    kpiCard('Outlier', d.outlier,'%', m.outlier,'<=','Limite máximo');
+  document.getElementById('rede-sub').textContent=
+    (redeMode==='backbone'?'Backbone':'Acesso')+' — '+(d.n||0)+' OS · Prazo, TME e Outlier vs metas';
+  drawRedeTrend(d,m); drawRedeOutlier(d);
+}
+function drawRedeTrend(d,m){
+  charts.rt&&charts.rt.destroy();
+  charts.rt=new Chart(redeTrend,{type:'line',data:{labels:d.trend.labels,datasets:[
+    {label:'Prazo %',data:d.trend.vals,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.1)',
+     fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#3b82f6',borderWidth:2.5},
+    {label:'Meta',data:d.trend.labels.map(()=>m.prazo),borderColor:'#f59e0b',borderDash:[6,4],
+     pointRadius:0,borderWidth:2,fill:false}
+  ]},options:chartOpts(true)});
+}
+function drawRedeOutlier(d){
+  charts.ro&&charts.ro.destroy();
+  charts.ro=new Chart(redeOutlier,{type:'bar',data:{labels:d.outliers.map(o=>o.c),datasets:[
+    {label:'Outliers',data:d.outliers.map(o=>o.v),
+     backgroundColor:d.outliers.map(o=>o.v>4?'#ff5c5c':o.v>2?'#f5a623':'#2ecc8f'),borderRadius:6}
+  ]},options:chartOpts(false)});
+}
+
+/* ============ RENDER B2B ============ */
+let b2bMode='encerrados';
+let SLA_B2B=8.0, SLA_CLOCK='tempo_ccs';
+let rawB2B=null;
+function recalcB2B(){
+  if(!rawB2B) return;
+  const calc=rows=>{
+    const t=rows.map(r=>num(r[SLA_CLOCK])).filter(v=>!isNaN(v)&&v>0);
+    const n=t.length||1;
+    return {prazo:+(t.filter(v=>v<=SLA_B2B).length/n*100).toFixed(1),
+      faixa1:+(t.filter(v=>v>SLA_B2B&&v<=24).length/n*100).toFixed(1),
+      faixa2:+(t.filter(v=>v>24).length/n*100).toFixed(1),
+      outlier:+(t.filter(v=>v>48).length/n*100).toFixed(1)};
+  };
+  DATA.b2b.encerrados={...DATA.b2b.encerrados,...calc(rawB2B),n:rawB2B.filter(r=>num(r[SLA_CLOCK])>0).length};
+  const cnt={}; rawB2B.forEach(r=>{const k=r.idservico;if(k!=null)cnt[k]=(cnt[k]||0)+1});
+  const reincRows=rawB2B.filter(r=>cnt[r.idservico]>1);
+  const servicos=Object.keys(cnt).length||1;
+  DATA.b2b.repetidos={...DATA.b2b.repetidos,...calc(reincRows),
+    reincidencia:+(Object.values(cnt).filter(v=>v>1).length/servicos*100).toFixed(1),tickets:reincRows.length};
+}
+function switchB2B(mode){
+  b2bMode=mode;
+  const labels=['abertos','encerrados','repetidos'];
+  document.querySelectorAll('[data-section=b2b] .subtab').forEach((t,i)=>
+    t.classList.toggle('active',labels[i]===mode));
+  renderB2B();
+}
+function changeClock(){
+  SLA_CLOCK=document.getElementById('slaClock').value;
+  recalcB2B(); renderB2B();
+}
+function renderB2B(){
+  const d=DATA.b2b[b2bMode], m=metas.b2b;
+  if(d.semDados){
+    document.getElementById('b2b-kpis').innerHTML=
+      `<div class="kpi" style="grid-column:1/-1"><div class="kpi-top"><span class="kpi-label">Sem base carregada</span></div>
+       <div style="font-size:13px;color:var(--text-2);margin-top:6px">Não há base de tickets <strong>Abertos</strong>. Carregue um arquivo na aba Dados ou use Encerrados/Repetidos.</div></div>`;
+    charts.bf&&charts.bf.destroy(); charts.bd&&charts.bd.destroy();
+    document.getElementById('b2b-sub').textContent='Abertos — sem base disponível';
+    return;
+  }
+  let extra='';
+  if(b2bMode==='repetidos') extra=kpiCard('Reincidência', d.reincidencia,'%', 20.0,'<=','Limite serviços');
+  document.getElementById('b2b-kpis').innerHTML=
+    kpiCard('Prazo SLA', d.prazo,'%', m.prazo,'>=','Meta mínima')+
+    kpiCard('Fora do Prazo · Faixa 1', d.faixa1,'%', m.faixa1,'<=','Limite máximo')+
+    kpiCard('Fora do Prazo · Faixa 2', d.faixa2,'%', m.faixa2,'<=','Limite máximo')+
+    kpiCard('Outlier', d.outlier,'%', m.outlier,'<=','Limite máximo')+extra;
+  const names={encerrados:'Encerrados · '+(d.n||0)+' tickets',repetidos:'Repetidos · '+(d.tickets||0)+' tickets reincidentes'};
+  document.getElementById('b2b-sub').textContent=names[b2bMode]+' — SLA '+SLA_B2B+'h ('+SLA_CLOCK+')';
+  drawB2BFaixa(d); drawB2BDonut(d);
+}
+function drawB2BFaixa(d){
+  charts.bf&&charts.bf.destroy();
+  charts.bf=new Chart(b2bFaixa,{type:'bar',data:{labels:d.faixaTrend.labels,datasets:[
+    {label:'Faixa 1',data:d.faixaTrend.f1,backgroundColor:'#f5a623',borderRadius:5,stack:'s'},
+    {label:'Faixa 2',data:d.faixaTrend.f2,backgroundColor:'#ff5c5c',borderRadius:5,stack:'s'}
+  ]},options:chartOpts(true)});
+}
+function drawB2BDonut(d){
+  charts.bd&&charts.bd.destroy();
+  const dentro=Math.max(0,100-d.faixa1-d.faixa2);
+  charts.bd=new Chart(b2bDonut,{type:'doughnut',data:{labels:['Dentro do prazo','Faixa 1','Faixa 2'],datasets:[
+    {data:[dentro,d.faixa1,d.faixa2],backgroundColor:['#2ecc8f','#f5a623','#ff5c5c'],borderWidth:0}
+  ]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
+    plugins:{legend:{position:'bottom',labels:{color:'#8a96a8',padding:14,font:{size:11,family:'Inter'},usePointStyle:true,pointStyle:'circle'}}}}});
+}
+
+/* ============ RENDER COMBUSTÍVEL ============ */
+function renderFuel(){
+  const d=DATA.combustivel, m=metas.fuel;
+  document.getElementById('fuel-kpis').innerHTML=
+    kpiCard('Eficiência média', d.efic,'km/L', m.efic,'>=','Meta mínima')+
+    kpiCard('Dentro do balizador', d.baliz,'%', m.baliz,'>=','Meta mínima')+
+    kpiCard('Desvio de consumo', d.desvio,'%', m.desvio,'<=','Limite máximo');
+  drawFuelComp(d); drawFuelDonut(d);
+}
+function drawFuelComp(d){
+  charts.fc&&charts.fc.destroy();
+  charts.fc=new Chart(fuelComp,{type:'bar',data:{labels:d.porEstado.map(e=>e.c),datasets:[
+    {label:'Realizado',data:d.porEstado.map(e=>e.real),
+     backgroundColor:d.porEstado.map(e=>e.real>e.bal?'#ff5c5c':'#f59e0b'),borderRadius:6},
+    {label:'Balizador',data:d.porEstado.map(e=>e.bal),backgroundColor:'#2e3a4d',borderRadius:6}
+  ]},options:chartOpts(true)});
+}
+function drawFuelDonut(d){
+  charts.fd&&charts.fd.destroy();
+  charts.fd=new Chart(fuelDonut,{type:'doughnut',data:{labels:d.porEstado.map(e=>e.c),datasets:[
+    {data:d.porEstado.map(e=>e.real),
+     backgroundColor:['#f59e0b','#3b82f6','#2ecc8f','#a855f7','#f5a623'],borderWidth:0}
+  ]},options:{responsive:true,maintainAspectRatio:false,cutout:'66%',
+    plugins:{legend:{position:'bottom',labels:{color:'#8a96a8',padding:12,font:{size:11,family:'Inter'},usePointStyle:true,pointStyle:'circle'}}}}});
+}
+
+/* ============ RENDER OFS ============ */
+function renderOFS(){
+  const d=DATA.ofs, m=metas.ofs;
+  document.getElementById('ofs-kpis').innerHTML=
+    kpiCard('Produtividade', d.prod,'OS', m.prod,'>=','Meta mínima · /téc/dia')+
+    kpiCard('Taxa de conclusão', d.concl,'%', m.concl,'>=','Meta mínima')+
+    kpiCard('Pendentes', d.pend,'%', m.pend,'<=','Limite máximo')+
+    kpiCard('OS improdutivas', d.improd,'%', m.improd,'<=','Limite máximo');
+  drawOFSTrend(d,m); drawOFSDonut(d);
+}
+function drawOFSTrend(d,m){
+  charts.ot&&charts.ot.destroy();
+  charts.ot=new Chart(ofsTrend,{type:'line',data:{labels:d.prodTrend.labels,datasets:[
+    {label:'Taxa de conclusão %',data:d.prodTrend.vals,borderColor:'#2ecc8f',backgroundColor:'rgba(46,204,143,.1)',
+     fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#2ecc8f',borderWidth:2.5},
+    {label:'Meta',data:d.prodTrend.labels.map(()=>m.concl),borderColor:'#f59e0b',borderDash:[6,4],
+     pointRadius:0,borderWidth:2,fill:false}
+  ]},options:chartOpts(true)});
+}
+function drawOFSDonut(d){
+  charts.od&&charts.od.destroy();
+  const s=d.statusOS;
+  charts.od=new Chart(ofsDonut,{type:'doughnut',data:{labels:['Concluídas','Pendentes','Suspensas','Improdutivas'],datasets:[
+    {data:[s.concluidas,s.pendentes,s.suspensas,s.improdutivas],backgroundColor:['#2ecc8f','#f5a623','#3b82f6','#ff5c5c'],borderWidth:0}
+  ]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
+    plugins:{legend:{position:'bottom',labels:{color:'#8a96a8',padding:14,font:{size:11,family:'Inter'},usePointStyle:true,pointStyle:'circle'}}}}});
+}
+
+/* ============ CHART DEFAULTS ============ */
+function chartOpts(legend){
+  return {responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:legend,position:'top',align:'end',
+      labels:{color:'#8a96a8',font:{size:11,family:'Inter'},usePointStyle:true,pointStyle:'circle',padding:14}}},
+    scales:{
+      x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5b6677',font:{size:10,family:'JetBrains Mono'}}},
+      y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5b6677',font:{size:10,family:'JetBrains Mono'}},beginAtZero:false}
+    }};
+}
+
+/* ============ NAV ============ */
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.dataset.section===tab));
+}
+
+/* ============ UPLOAD XLSX ============ */
+function handleFile(e){
+  const f=e.target.files[0]; if(!f)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+      const loaded=parseWorkbook(wb);
+      document.getElementById('upload-status').textContent=loaded&&loaded.length
+        ? f.name+' · carregado: '+loaded.join(', ')
+        : f.name+' · nenhum módulo reconhecido (verifique abas/colunas)';
+      renderRede(); renderB2B(); renderFuel(); renderOFS();
+    }catch(err){
+      document.getElementById('upload-status').textContent='Erro ao ler arquivo — verifique a estrutura';
+    }
+  };
+  reader.readAsArrayBuffer(f);
+}
+function num(v){const n=parseFloat(String(v).replace(',','.'));return isNaN(n)?NaN:n}
+function pct(arr,fn){const v=arr.filter(x=>x!=null);return v.length?+(v.filter(fn).length/v.length*100).toFixed(1):0}
+function avg(arr){const v=arr.filter(x=>!isNaN(x));return v.length?+(v.reduce((a,b)=>a+b,0)/v.length).toFixed(2):0}
+function ufAgg(rows,flag){const o={MA:0,PA:0,PI:0,AM:0,AP:0};rows.forEach(r=>{const uf=String(r.UF||r.ufservico||'').trim();if(flag(r)&&uf in o)o[uf]++});return Object.entries(o).map(([c,v])=>({c,v}))}
+function weekTrend(rows,dateKey,valFn){
+  const wk={};
+  rows.forEach(r=>{const d=new Date(r[dateKey]);if(isNaN(d))return;
+    const t=new Date(d);t.setHours(0,0,0,0);t.setDate(t.getDate()+3-(t.getDay()+6)%7);
+    const w1=new Date(t.getFullYear(),0,4);const n=1+Math.round(((t-w1)/86400000-3+(w1.getDay()+6)%7)/7);
+    (wk[n]=wk[n]||[]).push(r);});
+  const keys=Object.keys(wk).map(Number).sort((a,b)=>a-b).slice(-7);
+  return {labels:keys.map(k=>'S'+k),vals:keys.map(k=>valFn(wk[k]))};
+}
+function findSheet(wb,...terms){const i=wb.SheetNames.findIndex(n=>terms.some(t=>n.toLowerCase().includes(t)));return i>=0?wb.SheetNames[i]:null}
+
+function parseWorkbook(wb){
+  let loaded=[];
+  /* ---- REDE ---- */
+  const bbSheet=findSheet(wb,'backbone');
+  const acSheet=findSheet(wb,'acesso','planilha1');
+  const loadRede=(sheet,key,tmeCol)=>{
+    if(!sheet)return;
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheet]);
+    if(!rows.length||!('PRAZO' in rows[0]))return;
+    DATA.rede[key]={prazo:pct(rows.map(r=>num(r.PRAZO)),v=>v===1),
+      outlier:pct(rows.map(r=>num(r.OUTLIER)),v=>v===1),
+      tme:avg(rows.map(r=>num(r[tmeCol]))),n:rows.length,
+      outliers:ufAgg(rows,r=>num(r.OUTLIER)===1),
+      trend:weekTrend(rows,'DATA_ABERTURA',g=>pct(g.map(r=>num(r.PRAZO)),v=>v===1))};
+    loaded.push('Rede '+key);
+  };
+  loadRede(bbSheet,'backbone','TMR');
+  loadRede(acSheet,'acesso','TME');
+
+  /* ---- B2B ENCERRADOS ---- */
+  const b2bSheet=findSheet(wb,'encerrado','b2b','ticket');
+  if(b2bSheet){
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[b2bSheet]);
+    if(rows.length&&(SLA_CLOCK in rows[0])){
+      rawB2B=rows;
+      recalcB2B();
+      const tr=weekTrend(rows,'data_fechamento',g=>pct(g.map(r=>num(r[SLA_CLOCK])),v=>v>SLA_B2B&&v<=24));
+      const tr2=weekTrend(rows,'data_fechamento',g=>pct(g.map(r=>num(r[SLA_CLOCK])),v=>v>24));
+      const ft={labels:tr.labels,f1:tr.vals,f2:tr2.vals};
+      DATA.b2b.encerrados.faixaTrend=ft; DATA.b2b.repetidos.faixaTrend=ft;
+      loaded.push('B2B Encerrados');
+    }
+  }
+
+  /* ---- COMBUSTÍVEL ---- */
+  const fuelSheet=findSheet(wb,'combust','frota','fuel','alelo');
+  if(fuelSheet){
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[fuelSheet]);const est=[];
+    rows.forEach(r=>{
+      if(r.efic_kml!=null)DATA.combustivel.efic=num(r.efic_kml);
+      if(r.baliz_pct!=null)DATA.combustivel.baliz=num(r.baliz_pct);
+      if(r.desvio_pct!=null)DATA.combustivel.desvio=num(r.desvio_pct);
+      if(r.estado&&r.consumo_real!=null)est.push({c:String(r.estado),real:num(r.consumo_real),bal:num(r.balizador||r.consumo_real)});
+    });
+    if(est.length)DATA.combustivel.porEstado=est;
+    loaded.push('Combustível');
+  }
+
+  /* ---- OFS ---- */
+  const rrSheet=findSheet(wb,'resumo_recurso');
+  const rdSheet=findSheet(wb,'resumo_data');
+  if(rrSheet){
+    const rr=XLSX.utils.sheet_to_json(wb.Sheets[rrSheet]).filter(r=>r.Recurso&&r.Total);
+    if(rr.length){
+      const sum=k=>rr.reduce((a,r)=>a+(num(r[k])||0),0);
+      const tot=sum('Total'),concl=sum('concluído')||sum('concluido');
+      const improd=(sum('cancelado'))+(sum('não concluído')||sum('nao concluido'));
+      const pend=sum('pendente'),susp=sum('suspenso');
+      DATA.ofs.concl=+(concl/tot*100).toFixed(1);
+      DATA.ofs.improd=+(improd/tot*100).toFixed(1);
+      DATA.ofs.pend=+(pend/tot*100).toFixed(1);
+      DATA.ofs.tecnicos=rr.length;
+      DATA.ofs.statusOS={concluidas:Math.round(concl),pendentes:Math.round(pend),suspensas:Math.round(susp),improdutivas:Math.round(improd)};
+      loaded.push('OFS');
+    }
+  }
+  if(rdSheet){
+    const rd=XLSX.utils.sheet_to_json(wb.Sheets[rdSheet]).filter(r=>r.Total);
+    if(rd.length){
+      const last=rd.slice(-7);
+      DATA.ofs.dias=rd.length;
+      DATA.ofs.prod=+((DATA.ofs.statusOS.concluidas||0)/(DATA.ofs.tecnicos||1)/rd.length).toFixed(2);
+      DATA.ofs.prodTrend={labels:last.map((r,i)=>{const d=new Date(r.Data);return isNaN(d)?('D'+(i+1)):(d.getDate()+'/'+(d.getMonth()+1))}),
+        vals:last.map(r=>+((num(r['concluído'])||num(r.concluido))/num(r.Total)*100).toFixed(1))};
+    }
+  }
+  return loaded;
+}
+
+/* ============ EXPORT PNG ============ */
+function exportPNG(){
+  const node=document.getElementById('capture');
+  html2canvas(node,{backgroundColor:'#0a0e14',scale:2}).then(c=>{
+    const a=document.createElement('a');
+    a.download='painel_b2b_secundario.png';
+    a.href=c.toDataURL('image/png'); a.click();
+  });
+}
+
+/* ============ INIT ============ */
+renderRede(); renderB2B(); renderFuel(); renderOFS();
+</script>
+</body>
+</html>

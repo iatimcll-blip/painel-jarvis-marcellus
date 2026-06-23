@@ -90,6 +90,16 @@
       " Carregar .xlsx";
     actions.appendChild(uploadLabel);
 
+    /* Link para Painel Secundário */
+    var secLink = document.createElement("a");
+    secLink.href = "painel_secundario.html";
+    secLink.className = "btn";
+    secLink.title = "Ir para Painel Operacional Secundário";
+    secLink.style.textDecoration = "none";
+    secLink.innerHTML =
+      svg('<path d="M9 18l6-6-6-6"/>') + " Secundário";
+    actions.appendChild(secLink);
+
     /* Exportar PNG */
     var exportBtn = document.createElement("button");
     exportBtn.type = "button";
