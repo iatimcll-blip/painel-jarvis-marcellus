@@ -1,0 +1,602 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap");
+
+/* ================================================================
+   DESIGN SYSTEM — Tema Escuro Executivo MCLL
+   Tokens idênticos ao painel_secundario.html
+   ================================================================ */
+:root {
+  color-scheme: dark;
+  --bg:       #0a0e14;
+  --surface:  #121821;
+  --surface-2:#1a2230;
+  --border:   #232c3b;
+  --border-2: #2e3a4d;
+  --text:     #e8edf4;
+  --text-2:   #8a96a8;
+  --text-3:   #5b6677;
+  --ok:       #2ecc8f;
+  --ok-bg:    rgba(46,204,143,.12);
+  --warn:     #f5a623;
+  --warn-bg:  rgba(245,166,35,.12);
+  --crit:     #ff5c5c;
+  --crit-bg:  rgba(255,92,92,.12);
+  --accent:   #f59e0b;
+  --accent-2: #3b82f6;
+  /* Aliases para compatibilidade com classes legadas */
+  --status-ok:        var(--ok);
+  --status-attention: var(--warn);
+  --status-critical:  var(--crit);
+  --attention-bg:     var(--warn-bg);
+  --critical-bg:      var(--crit-bg);
+  --neutral-bg:       rgba(139,149,165,.13);
+  --accent-bg:        rgba(245,158,11,.13);
+  --text-muted:       var(--text-2);
+  --hint:             var(--text-3);
+  --sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  --r:    9px;
+  --r-lg: 13px;
+  --pill: 20px;
+  /* Aliases de radius para classes do painel_atrix */
+  --radius:    var(--r);
+  --radius-lg: var(--r-lg);
+}
+
+/* ================================================================
+   BASE
+   ================================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { background: var(--bg); }
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select { font: inherit; }
+
+/* ================================================================
+   CONTAINER
+   ================================================================ */
+.container {
+  width: min(100%, 1440px);
+  max-width: none;
+  margin: 0 auto;
+  padding: 28px 20px 72px;
+}
+
+/* ================================================================
+   HEADER — sticky, blur, 68 px
+   ================================================================ */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 68px;
+  padding: 0 20px;
+  background: rgba(10,14,20,.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+}
+
+/* Esconde elementos originais reconstruídos pelo JS */
+.header > h1,
+.header > .upload-btn { display: none !important; }
+
+/* ----- Brand ----- */
+.redesign-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.redesign-logo-letter {
+  width: 38px; height: 38px;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 18px; color: #0a0e14;
+  font-family: var(--sans);
+  user-select: none;
+}
+
+.redesign-title {
+  font-size: 17px; font-weight: 700;
+  color: var(--text); letter-spacing: -.2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.redesign-subtitle {
+  display: block; margin-top: 2px;
+  font-size: 11.5px; font-weight: 500;
+  color: var(--text-2); letter-spacing: .3px;
+}
+
+.redesign-subtitle #updatedAt {
+  color: var(--text-2); font-size: inherit;
+}
+
+/* ----- Actions ----- */
+.redesign-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ----- Pulse tag ----- */
+.redesign-pulse-tag {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 13px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  font-size: 12px; font-weight: 600; color: var(--text-2);
+  white-space: nowrap;
+}
+
+.redesign-pulse {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--ok);
+  flex-shrink: 0;
+  animation: rd-pulse 2s infinite;
+}
+
+@keyframes rd-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(46,204,143,.55); }
+  70%  { box-shadow: 0 0 0 7px rgba(46,204,143,0);   }
+  100% { box-shadow: 0 0 0 0   rgba(46,204,143,0);   }
+}
+
+/* ================================================================
+   BUTTONS — override classes do painel base
+   ================================================================ */
+.btn,
+.redesign-theme-toggle,
+.upload-btn {
+  font-family: var(--sans);
+  font-size: 13px; font-weight: 600;
+  padding: 9px 15px;
+  border-radius: var(--r);
+  border: 1px solid var(--border-2);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex; align-items: center; gap: 7px;
+  transition: background .15s, border-color .15s, color .15s, transform .1s;
+  min-height: 38px;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.btn:hover,
+.redesign-theme-toggle:hover,
+.upload-btn:hover {
+  background: var(--border);
+  border-color: var(--text-3);
+  color: var(--text);
+}
+
+.btn svg,
+.redesign-theme-toggle svg,
+.upload-btn svg { width: 15px; height: 15px; flex: 0 0 auto; }
+
+.btn-accent {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #0a0e14 !important;
+}
+.btn-accent:hover { background: #fbbf3f !important; }
+
+/* Spinner */
+.btn .spinner {
+  display: none;
+  width: 14px; height: 14px;
+  border: 2px solid var(--border-2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: rd-spin .6s linear infinite;
+}
+@keyframes rd-spin { to { transform: rotate(360deg); } }
+
+.btn.loading .spinner  { display: inline-block; }
+.btn.loading .btn-icon { display: none; }
+.btn.copied { border-color: var(--ok) !important; color: var(--ok) !important; }
+
+/* ================================================================
+   KPI CARDS
+   ================================================================ */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px 20px 16px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .18s, transform .18s, box-shadow .18s;
+  /* Reset fundos coloridos do painel base */
+  min-height: auto;
+}
+
+/* Borda lateral de status */
+.kpi::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--text-3);
+  border-radius: 3px 0 0 3px;
+}
+.kpi.s-ok::before   { background: var(--ok); }
+.kpi.s-warn::before { background: var(--warn); }
+.kpi.s-crit::before { background: var(--crit); }
+
+.kpi:hover {
+  border-color: var(--border-2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.32);
+}
+
+/* Neutraliza classes legadas (override do border-color:transparent do base) */
+.kpi.danger,
+.kpi.warn {
+  background: var(--surface);
+  border-color: var(--border) !important;
+}
+
+/* ----- Topo: label + badge ----- */
+.kpi-top {
+  display: flex;
+  align-items: center; justify-content: space-between;
+  gap: 8px; margin-bottom: 14px;
+}
+
+.kpi-label {
+  font-size: 11.5px; font-weight: 600;
+  color: var(--text-2);
+  text-transform: uppercase; letter-spacing: .6px;
+  margin-bottom: 0;
+}
+
+.kpi-badge {
+  font-size: 10.5px; font-weight: 700;
+  padding: 3px 9px; border-radius: var(--pill);
+  white-space: nowrap; flex-shrink: 0;
+}
+.kpi-badge.s-ok      { background: var(--ok-bg);      color: var(--ok); }
+.kpi-badge.s-warn    { background: var(--warn-bg);     color: var(--warn); }
+.kpi-badge.s-crit    { background: var(--crit-bg);     color: var(--crit); }
+.kpi-badge.s-neutral { background: var(--neutral-bg);  color: var(--text-2); }
+
+/* ----- Valor ----- */
+.kpi-value {
+  font-family: var(--mono);
+  font-size: 34px; font-weight: 700;
+  letter-spacing: -1px; line-height: 1;
+  color: var(--text);
+}
+.kpi.danger .kpi-value,
+.kpi.warn   .kpi-value { color: var(--text); }
+
+.kpi-value .unit {
+  font-size: 16px; color: var(--text-2);
+  font-weight: 500; margin-left: 3px;
+}
+
+/* ----- Barra de progresso ----- */
+.kpi-bar {
+  height: 5px;
+  background: var(--surface-2);
+  border-radius: 3px;
+  margin-top: 14px;
+  overflow: hidden;
+}
+.kpi-bar i {
+  display: block; height: 100%;
+  border-radius: 3px;
+  transition: width .5s ease;
+}
+.kpi-bar i.s-ok      { background: var(--ok); }
+.kpi-bar i.s-warn    { background: var(--warn); }
+.kpi-bar i.s-crit    { background: var(--crit); }
+.kpi-bar i.s-neutral { background: var(--text-3); }
+
+/* ----- Rodapé / meta ----- */
+.redesign-kpi-meta {
+  margin-top: 13px; padding-top: 11px;
+  border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--text-3); font-weight: 500;
+}
+
+/* ================================================================
+   CHARTS ROW
+   ================================================================ */
+.charts-row,
+.rankings-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.charts-row .card,
+.rankings-row .card { margin-bottom: 0; }
+
+canvas { max-width: 100%; }
+
+/* ================================================================
+   CARDS
+   ================================================================ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+.card:last-child { margin-bottom: 18px; }
+
+.card-title {
+  font-size: 14px; font-weight: 700;
+  color: var(--text); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title svg,
+.capture-header svg { width: 16px; height: 16px; color: var(--text-2); flex-shrink: 0; }
+
+/* ================================================================
+   RANKINGS
+   ================================================================ */
+.rank-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 7px 0; gap: 8px;
+  border-bottom: 1px solid var(--border);
+  min-height: auto;
+}
+.rank-item:last-child { border: none; }
+.rank-name { font-size: 12px; color: var(--text-2); font-weight: 500; word-break: break-word; line-height: 1.4; }
+
+/* ================================================================
+   BADGES — cluster, SLA, faixa
+   ================================================================ */
+.badge,
+.sla-badge,
+.faixa-badge,
+.cluster-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 22px; padding: 2px 10px;
+  border-radius: var(--pill);
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+
+/* Cluster colors — dark-safe */
+.badge-blue   { background: rgba(59,130,246,.16);  color: #60a5fa; }
+.badge-teal   { background: rgba(46,204,143,.16);  color: var(--ok); }
+.badge-purple { background: rgba(168,85,247,.16);  color: #c084fc; }
+.badge-green  { background: rgba(74,222,128,.15);  color: #4ade80; }
+.badge-amber  { background: var(--warn-bg);        color: var(--warn); }
+.badge-red    { background: var(--crit-bg);        color: var(--crit); }
+
+/* SLA / Faixa */
+.sla-great, .faixa-great { background: rgba(74,222,128,.15); color: #4ade80; }
+.sla-ok,    .faixa-ok    { background: rgba(46,204,143,.15); color: var(--ok); }
+.sla-warn,  .faixa-warn  { background: var(--warn-bg);       color: var(--warn); }
+.sla-danger,.faixa-danger{ background: rgba(255,92,92,.18);  color: #ff8080; }
+.sla-crit,  .faixa-crit  { background: var(--crit-bg);       color: var(--crit); }
+
+/* ================================================================
+   FILTER BAR
+   ================================================================ */
+.redesign-filter-bar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 12px;
+  padding: 12px 16px; margin-bottom: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+}
+
+.redesign-filter-title {
+  font-size: 12px; font-weight: 600; color: var(--text-2);
+  white-space: nowrap;
+}
+
+.filters { display: flex; flex: 1; flex-wrap: wrap; gap: 8px; }
+
+.filters select {
+  min-height: 34px; padding: 6px 10px;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r);
+  font-size: 12px; cursor: pointer;
+  transition: border-color .15s;
+}
+.filters select:focus { outline: none; border-color: var(--accent); }
+
+/* ================================================================
+   SLA LEGEND
+   ================================================================ */
+.sla-legend {
+  display: flex; flex-wrap: wrap; gap: 8px 14px;
+  font-size: 11px; color: var(--text-2);
+  margin-bottom: 10px;
+}
+.sla-legend span { display: flex; align-items: center; gap: 5px; }
+.sla-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+
+/* ================================================================
+   TABLES — pivot, group
+   ================================================================ */
+table, .pivot-table, .group-table {
+  width: 100%;
+  border-collapse: separate; border-spacing: 0;
+  color: var(--text); font-size: 12px;
+}
+
+thead th,
+.pivot-table thead th,
+.group-table thead th {
+  position: sticky; top: 0; z-index: 1;
+  padding: 8px 6px;
+  color: var(--text-2); background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .3px;
+  cursor: pointer; user-select: none; white-space: nowrap;
+}
+thead th:hover { color: var(--text); }
+
+tbody td,
+.pivot-table tbody td,
+.group-table tbody td {
+  padding: 7px 6px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  vertical-align: top; word-break: break-word;
+}
+
+tbody tr:hover td,
+.pivot-table tbody tr:hover td,
+.group-table tbody tr:hover td { background: var(--surface-2); }
+
+.pivot-table tfoot td {
+  padding: 10px 6px; font-weight: 700;
+  color: var(--text); background: var(--surface-2);
+  border-top: 1px solid var(--border);
+}
+
+/* Pivot bar */
+div[style*="background:#f0f0f0"],
+div[style*="background: #f0f0f0"] { background: var(--surface-2) !important; }
+.pivot-bar { background: var(--accent) !important; }
+
+/* ================================================================
+   CAPTURE AREAS
+   ================================================================ */
+.capture-area {
+  overflow: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+}
+
+.capture-header {
+  display: flex; align-items: center; gap: 8px;
+  min-height: 44px; padding: 10px 16px;
+  color: var(--text); background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px; font-weight: 600;
+}
+
+.capture-footer {
+  padding: 8px 16px;
+  font-size: 10px; color: var(--text-3);
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  text-align: right;
+}
+
+/* ================================================================
+   TABLE HEADER (botão copiar + título)
+   ================================================================ */
+.table-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
+}
+
+/* ================================================================
+   GROUP HEADER (cluster dentro do table)
+   ================================================================ */
+.group-header {
+  margin-top: 18px; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.group-header .cluster-badge { font-size: 12px; padding: 4px 10px; }
+
+/* ================================================================
+   MISC
+   ================================================================ */
+.cell-ticket,
+td[style*="monospace"],
+.cell-wrap { font-family: var(--mono); font-size: 11px; line-height: 1.35; }
+
+/* Override inline colors geradas pelo JS do painel base */
+span[style*="color:#6b7280"],
+span[style*="color: #6b7280"],
+td[style*="color:#6b7280"],
+td[style*="color: #6b7280"],
+span[style*="color:#9ca3af"],
+span[style*="color: #9ca3af"],
+span[style*="margin-left:auto;font-size:11px;font-weight:400;color:#6b7280"] {
+  color: var(--text-2) !important;
+}
+
+.empty-state { text-align: center; padding: 40px; color: var(--text-2); }
+
+/* ================================================================
+   TOAST
+   ================================================================ */
+.toast { border-radius: var(--r); font-family: var(--sans); }
+.toast-ok  { background: var(--ok);   color: #0a0e14; }
+.toast-err { background: var(--crit); color: #fff; }
+
+/* ================================================================
+   FOOTER
+   ================================================================ */
+.redesign-footer {
+  margin-top: 24px; padding: 16px 4px 4px;
+  color: var(--text-3); font-size: 11px; text-align: center;
+}
+
+/* ================================================================
+   HIDDEN
+   ================================================================ */
+[hidden] { display: none !important; }
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 960px) {
+  .kpi-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .container { padding: 16px 12px 60px; }
+  .kpi-row,
+  .charts-row,
+  .rankings-row { grid-template-columns: 1fr; }
+  .header {
+    min-height: auto;
+    padding: 12px 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .redesign-pulse-tag { display: none; }
+  .kpi-value { font-size: 28px; }
+  .redesign-filter-bar { flex-direction: column; align-items: stretch; }
+  .filters { flex-direction: column; }
+  .filters select { width: 100%; }
+}

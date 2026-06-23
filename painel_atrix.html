@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Jarvis - Marcellus</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#f5f6fa;--card:#fff;--text:#1a1a2e;--muted:#6b7280;--hint:#9ca3af;
+--border:#e5e7eb;--blue:#378ADD;--teal:#1D9E75;--amber:#EF9F27;--red:#E24B4A;
+--red-dark:#A32D2D;--red-bg:#FCEBEB;--amber-bg:#FAEEDA;--amber-dark:#633806;
+--teal-bg:#E1F5EE;--teal-dark:#085041;--blue-bg:#E6F1FB;--blue-dark:#0C447C;
+--green-bg:#EAF3DE;--green-dark:#27500A;--purple-bg:#EEEDFE;--purple-dark:#3C3489;
+--warn-bg:#FFF7ED;--warn-text:#854F0B;--danger-bg:#FEF2F2;--danger-text:#991B1B;
+--radius:8px;--radius-lg:12px;
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;padding:20px}
+.container{max-width:1200px;margin:0 auto}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.header h1{font-size:20px;font-weight:600;display:flex;align-items:center;gap:10px}
+.header h1 span{font-size:13px;font-weight:400;color:var(--muted)}
+.upload-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:13px;color:var(--text);transition:all .15s}
+.upload-btn:hover{border-color:var(--blue);color:var(--blue)}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--card);border-radius:var(--radius);padding:16px;border:1px solid var(--border)}
+.kpi-label{font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.kpi-value{font-size:26px;font-weight:700}
+.kpi.danger{background:var(--danger-bg);border-color:transparent}
+.kpi.danger .kpi-value{color:var(--danger-text)}
+.kpi.warn{background:var(--warn-bg);border-color:transparent}
+.kpi.warn .kpi-value{color:var(--warn-text)}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:20px}
+.card:last-child{margin-bottom:0}
+.card-title{font-size:14px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title svg{width:16px;height:16px;color:var(--muted)}
+.rankings-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.rankings-row .card{margin-bottom:0}
+.rank-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);gap:8px}
+.rank-item:last-child{border:none}
+.rank-name{font-size:12px;color:var(--muted);word-break:break-word;line-height:1.4}
+.badge{padding:2px 10px;border-radius:var(--radius);font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0}
+.badge-blue{background:var(--blue-bg);color:var(--blue-dark)}
+.badge-teal{background:var(--teal-bg);color:var(--teal-dark)}
+.badge-amber{background:var(--amber-bg);color:var(--amber-dark)}
+.badge-red{background:var(--red-bg);color:var(--red-dark)}
+.badge-purple{background:var(--purple-bg);color:var(--purple-dark)}
+.badge-green{background:var(--green-bg);color:var(--green-dark)}
+.table-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filters select{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:var(--card);color:var(--text);cursor:pointer}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--card);cursor:pointer;font-size:12px;font-weight:500;color:var(--text);transition:all .15s}
+.btn:hover{border-color:var(--blue);color:var(--blue)}
+.btn.copied{border-color:var(--teal);color:var(--teal)}
+.btn:disabled{opacity:.5;cursor:wait}
+.btn .spinner{display:none;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite}
+.btn.loading .spinner{display:inline-block}
+.btn.loading .btn-icon{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{text-align:left;padding:8px 6px;color:var(--muted);font-weight:600;border-bottom:2px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+thead th:hover{color:var(--text)}
+tbody td{padding:7px 6px;border-bottom:1px solid var(--border);vertical-align:top;word-break:break-word}
+tbody tr:hover{background:var(--bg)}
+.cell-ticket{font-family:'Cascadia Code','Fira Code',monospace;font-size:11px;white-space:nowrap}
+.cell-center{text-align:center}
+.cell-wrap{line-height:1.35;font-size:11px}
+.sla-badge{display:inline-block;padding:2px 10px;border-radius:var(--radius);font-weight:600;font-size:11px;min-width:38px;text-align:center}
+.sla-great{background:#DAFBE1;color:#14532D}
+.sla-ok{background:var(--teal-bg);color:var(--teal-dark)}
+.sla-warn{background:var(--amber-bg);color:var(--amber-dark)}
+.sla-danger{background:#FEE2E2;color:#991B1B}
+.sla-crit{background:var(--red-bg);color:var(--red-dark)}
+.cluster-badge{display:inline-block;padding:2px 8px;border-radius:var(--radius);font-size:10px;font-weight:600;white-space:nowrap}
+.empty-state{text-align:center;padding:40px;color:var(--hint)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:var(--radius);font-size:13px;font-weight:500;color:#fff;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+.toast.show{opacity:1}
+.toast-ok{background:var(--teal)}
+.toast-err{background:var(--red)}
+.pivot-table{width:100%;border-collapse:collapse;font-size:13px}
+.pivot-table thead th{padding:10px 12px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);border-bottom:2px solid var(--border);cursor:default}
+.pivot-table thead th:last-child,.pivot-table tbody td:last-child{text-align:center}
+.pivot-table tbody td{padding:8px 12px;border-bottom:1px solid var(--border)}
+.pivot-table tbody tr:hover{background:var(--bg)}
+.pivot-table tfoot td{padding:10px 12px;font-weight:700;border-top:2px solid var(--border);background:var(--bg)}
+.pivot-bar{height:8px;border-radius:4px;min-width:4px;transition:width .3s}
+.capture-area{background:#fff;border-radius:var(--radius-lg)}
+.capture-header{padding:12px 16px;display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;border-bottom:1px solid var(--border)}
+.capture-header svg{width:16px;height:16px;color:var(--muted);flex-shrink:0}
+.capture-footer{padding:8px 16px;font-size:10px;color:var(--hint);text-align:right;border-top:1px solid var(--border)}
+.group-header{margin-top:16px;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.group-header .cluster-badge{font-size:12px;padding:4px 10px}
+.group-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px;table-layout:fixed}
+.group-table thead th{text-align:left;padding:6px;color:#6b7280;font-weight:600;border-bottom:1px solid #e5e7eb;font-size:10px;text-transform:uppercase;letter-spacing:.3px}
+.group-table tbody td{padding:5px 6px;border-bottom:1px solid #f0f0f0;vertical-align:top;word-break:break-word;line-height:1.35}
+.group-table .col-ticket{width:12%}
+.group-table .col-cliente{width:14%}
+.group-table .col-cfinal{width:28%}
+.group-table .col-cidade{width:9%}
+.group-table .col-sla{width:7%;text-align:center}
+.group-table .col-faixa{width:11%;text-align:center}
+.group-table .col-substatus{width:19%}
+.faixa-badge{display:inline-block;padding:2px 8px;border-radius:var(--radius);font-weight:600;font-size:10px;white-space:nowrap;letter-spacing:.2px}
+.faixa-great{background:#DAFBE1;color:#14532D}
+.faixa-ok{background:var(--teal-bg);color:var(--teal-dark)}
+.faixa-warn{background:var(--amber-bg);color:var(--amber-dark)}
+.faixa-danger{background:#FEE2E2;color:#991B1B}
+.faixa-crit{background:var(--red-bg);color:var(--red-dark)}
+.charts-row .card{margin-bottom:0}
+.sla-legend{display:flex;gap:16px;margin-top:8px;font-size:11px;color:var(--muted)}
+.sla-legend span{display:flex;align-items:center;gap:4px}
+.sla-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+@media(max-width:768px){
+.kpi-row{grid-template-columns:repeat(2,1fr)}
+.charts-row,.rankings-row{grid-template-columns:1fr}
+.header{flex-direction:column;align-items:flex-start}
+}
+</style>
+<link rel="stylesheet" href="./painel-atrix-redesign.css">
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>&#128225; Painel B2B — chamados abertos <span id="updatedAt"></span></h1>
+    <label class="upload-btn">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      Carregar .xlsx
+      <input type="file" accept=".xlsx,.xls" id="fileInput" hidden>
+    </label>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-label">Total abertos</div><div class="kpi-value" id="kpiTotal">-</div></div>
+    <div class="kpi"><div class="kpi-label">SLA médio</div><div class="kpi-value" id="kpiMedia">-</div></div>
+    <div class="kpi danger"><div class="kpi-label">Outlier (SLA ≥ 24h)</div><div class="kpi-value" id="kpiCrit">-</div></div>
+    <div class="kpi warn"><div class="kpi-label">Pend. agendamento</div><div class="kpi-value" id="kpiPend">-</div></div>
+  </div>
+
+  <div class="rankings-row">
+    <div class="card">
+      <div class="card-title"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg>Top clientes</div>
+      <div id="rankClientes"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>Top cidades</div>
+      <div id="rankCidades"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-header">
+      <div class="card-title" style="margin:0"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>Resumo por cluster</div>
+      <button class="btn" onclick="copyAsImage('pivotCapture', this)">
+        <div class="spinner"></div>
+        <svg class="btn-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        <span>Copiar imagem</span>
+      </button>
+    </div>
+    <div id="pivotCapture" class="capture-area">
+      <div class="capture-header">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+        B2B Abertos — Resumo por cluster
+        <span id="pivotDate" style="margin-left:auto;font-size:11px;font-weight:400;color:#6b7280"></span>
+      </div>
+      <div style="padding:12px 16px">
+        <table class="pivot-table">
+          <thead><tr><th>Cluster</th><th>EPS / MOP</th><th>Distribuição</th><th style="text-align:center">Qtd</th></tr></thead>
+          <tbody id="pivotBody"></tbody>
+          <tfoot id="pivotFoot"></tfoot>
+        </table>
+      </div>
+      <div class="capture-footer">MCLL Operações · Painel B2B Abertos</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-header">
+      <div class="card-title" style="margin:0"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Chamados abertos</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="filters">
+          <select id="fUF"><option value="">Todas UF</option></select>
+          <select id="fCluster"><option value="">Todos clusters</option></select>
+          <select id="fCidade"><option value="">Todas cidades</option></select>
+          <select id="fSLA"><option value="">Todas faixas</option><option value="4">Até 4h</option><option value="8">Entre 4h e 8h</option><option value="12">Entre 8h e 12h</option><option value="24">Entre 12h e 24h</option><option value="99">Maior que 24h</option></select>
+        </div>
+        <button class="btn" onclick="copyAsImage('tableCapture', this)">
+          <div class="spinner"></div>
+          <svg class="btn-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          <span>Copiar imagem</span>
+        </button>
+      </div>
+    </div>
+    <div class="sla-legend" style="flex-wrap:wrap">
+      <span><span class="sla-dot" style="background:#22C55E"></span> Até 4h</span>
+      <span><span class="sla-dot" style="background:var(--teal)"></span> 4h–8h</span>
+      <span><span class="sla-dot" style="background:var(--amber)"></span> 8h–12h</span>
+      <span><span class="sla-dot" style="background:#DC2626"></span> 12h–24h</span>
+      <span><span class="sla-dot" style="background:var(--red-dark)"></span> &gt; 24h</span>
+      <span style="margin-left:auto;font-style:italic">Seg-Sex 08–18h · Sáb 08–12h</span>
+    </div>
+    <div id="tableCapture" class="capture-area" style="margin-top:8px">
+      <div class="capture-header">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        B2B Abertos — Chamados por cluster (SLA horário comercial)
+        <span id="tableDate" style="margin-left:auto;font-size:11px;font-weight:400;color:#6b7280"></span>
+      </div>
+      <div style="padding:4px 16px 8px" id="tableCaptureInner"></div>
+      <div class="capture-footer">MCLL Operações · Painel B2B Abertos · SLA: Seg-Sex 08–18h / Sáb 08–12h / Dom e Feriados congelado</div>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="card">
+      <div class="card-title"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Distribuição por UF</div>
+      <canvas id="chartUF" height="160"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Aging SLA (horas úteis)</div>
+      <canvas id="chartAging" height="160"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ========================
+// FERIADOS NACIONAIS 2025-2027
+// ========================
+const FERIADOS = new Set([
+  // 2025
+  '2025-01-01','2025-03-03','2025-03-04','2025-04-18','2025-04-21',
+  '2025-05-01','2025-06-19','2025-09-07','2025-10-12','2025-11-02',
+  '2025-11-15','2025-12-25',
+  // 2026
+  '2026-01-01','2026-02-16','2026-02-17','2026-04-03','2026-04-21',
+  '2026-05-01','2026-06-04','2026-09-07','2026-10-12','2026-11-02',
+  '2026-11-15','2026-12-25',
+  // 2027
+  '2027-01-01','2027-02-08','2027-02-09','2027-03-26','2027-04-21',
+  '2027-05-01','2027-05-27','2027-09-07','2027-10-12','2027-11-02',
+  '2027-11-15','2027-12-25'
+]);
+
+function isFeriado(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth()+1).padStart(2,'0');
+  const d = String(date.getDate()).padStart(2,'0');
+  return FERIADOS.has(`${y}-${m}-${d}`);
+}
+
+// ========================
+// CÁLCULO SLA EM HORAS ÚTEIS
+// ========================
+function calcSLAHours(abertura, agora) {
+  if (!abertura || isNaN(abertura.getTime())) return 0;
+  if (agora <= abertura) return 0;
+
+  let totalMinutes = 0;
+  let cursor = new Date(abertura.getTime());
+
+  while (cursor < agora) {
+    const dow = cursor.getDay(); // 0=dom 6=sab
+    const isHoliday = isFeriado(cursor);
+
+    let dayStart, dayEnd;
+    if (dow === 0 || isHoliday) {
+      // Domingo ou feriado: avança para próximo dia 08:00
+      cursor.setDate(cursor.getDate() + 1);
+      cursor.setHours(8, 0, 0, 0);
+      continue;
+    } else if (dow === 6) {
+      // Sábado: 08:00–12:00
+      dayStart = 8; dayEnd = 12;
+    } else {
+      // Seg–Sex: 08:00–18:00
+      dayStart = 8; dayEnd = 18;
+    }
+
+    const dayStartTime = new Date(cursor);
+    dayStartTime.setHours(dayStart, 0, 0, 0);
+    const dayEndTime = new Date(cursor);
+    dayEndTime.setHours(dayEnd, 0, 0, 0);
+
+    // Cursor antes do horário comercial
+    if (cursor < dayStartTime) cursor = dayStartTime;
+
+    // Cursor depois do horário comercial
+    if (cursor >= dayEndTime) {
+      cursor.setDate(cursor.getDate() + 1);
+      cursor.setHours(8, 0, 0, 0);
+      continue;
+    }
+
+    // Fim efetivo = min(dayEnd, agora)
+    const effectiveEnd = agora < dayEndTime ? agora : dayEndTime;
+
+    if (effectiveEnd > cursor) {
+      totalMinutes += (effectiveEnd - cursor) / 60000;
+    }
+
+    // Próximo dia
+    cursor.setDate(cursor.getDate() + 1);
+    cursor.setHours(8, 0, 0, 0);
+  }
+
+  return Math.round(totalMinutes / 60 * 10) / 10; // 1 casa decimal
+}
+
+function slaClass(h) { return h > 24 ? 'sla-crit' : h > 12 ? 'sla-danger' : h > 8 ? 'sla-warn' : h > 4 ? 'sla-ok' : 'sla-great'; }
+function faixaInfo(h) {
+  if (h > 24) return {label:'Maior que 24h', css:'faixa-crit'};
+  if (h > 12) return {label:'Entre 12h e 24h', css:'faixa-danger'};
+  if (h > 8)  return {label:'Entre 8h e 12h', css:'faixa-warn'};
+  if (h > 4)  return {label:'Entre 4h e 8h', css:'faixa-ok'};
+  return {label:'Até 4h', css:'faixa-great'};
+}
+function slaLabel(h) {
+  const hrs = Math.floor(h);
+  const mins = Math.round((h - hrs) * 60);
+  return String(hrs).padStart(2,'0') + ':' + String(mins).padStart(2,'0');
+}
+
+// ========================
+// CLUSTER MAPPING
+// ========================
+const CLUSTER_MAP = [
+  {uf:'MA', cidades:['SAO LUIS','SAO JOSE DE RIBAMAR','PACO DO LUMIAR'], cluster:'MA CAP', eps:'SLN MA', color:'blue'},
+  {uf:'MA', cidades:null, cluster:'MA INT', eps:'GIGA+ MA', color:'purple'},
+  {uf:'PA', cidades:['BELEM','ANANINDEUA'], cluster:'PA CAP', eps:'SLN PA', color:'teal'},
+  {uf:'PA', cidades:['SANTAREM','ALMERIM'], cluster:'AP', eps:'ADX', color:'amber'},
+  {uf:'PA', cidades:null, cluster:'PA INT', eps:'SLN', color:'green'},
+  {uf:'AP', cidades:null, cluster:'AP', eps:'ADX', color:'amber'},
+  {uf:'AM', cidades:null, cluster:'AM', eps:'ADX', color:'amber'},
+  {uf:'PI', cidades:null, cluster:'PI', eps:'GIGA+ PI', color:'purple'},
+];
+const CLUSTER_ORDER = ['MA CAP','MA INT','PA CAP','PA INT','AP','AM','PI'];
+
+function getCluster(uf, cidade) {
+  const u = (uf||'').trim().toUpperCase();
+  const c = (cidade||'').trim().toUpperCase();
+  for (const r of CLUSTER_MAP) {
+    if (r.uf !== u) continue;
+    if (r.cidades === null) return {cluster:r.cluster, eps:r.eps, color:r.color};
+    if (r.cidades.includes(c)) return {cluster:r.cluster, eps:r.eps, color:r.color};
+  }
+  return {cluster:u||'N/D', eps:'N/D', color:'blue'};
+}
+
+let DATA = [];
+let sortCol = 'sla', sortDir = -1;
+let chartUF, chartAging;
+
+function clean(v) { return (v||'').toString().replace(/[\u00a0]/g,'').trim(); }
+
+function recalcSLA() {
+  const agora = new Date();
+  DATA.forEach(d => { d.sla = calcSLAHours(d.abertura, agora); });
+}
+
+function parseXLSX(wb) {
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+  DATA = rows.map(r => {
+    const keys = Object.keys(r);
+    const get = (patterns) => {
+      const k = keys.find(k => patterns.some(p => k.toUpperCase().replace(/[\u00a0]/g,'').includes(p)));
+      return k ? r[k] : '';
+    };
+    const abertura = get(['ABERTURA']);
+    let abDate = null;
+    if (abertura) {
+      if (typeof abertura === 'number') abDate = new Date(Math.round((abertura - 25569)*86400*1000));
+      else abDate = new Date(abertura);
+    }
+    const uf = clean(get(['UF']));
+    const cidade = clean(get(['CIDADE']));
+    const cl = getCluster(uf, cidade);
+    return {
+      ticket: clean(get(['IDTICKET','TICKET'])),
+      cliente: clean(get(['CLIENTE'])),
+      clienteFinal: clean(get(['CLIENTE FINAL','CLIENTEFINAL'])),
+      depto: clean(get(['DEPARTAMENTO'])),
+      tipo: clean(get(['TIPO'])),
+      abertura: abDate,
+      sla: 0,
+      status: clean(get(['STATUS'])),
+      substatus: clean(get(['SUBSTATUS'])),
+      bdesk: clean(get(['BDESK'])),
+      cidade, uf,
+      cluster: cl.cluster, eps: cl.eps, clusterColor: cl.color
+    };
+  });
+  recalcSLA();
+  render();
+}
+
+function render() {
+  const now = new Date();
+  const dtStr = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('updatedAt').textContent = dtStr;
+  document.getElementById('pivotDate').textContent = dtStr;
+  document.getElementById('tableDate').textContent = dtStr;
+
+  const total = DATA.length;
+  const slas = DATA.map(d=>d.sla);
+  const media = total ? (slas.reduce((a,b)=>a+b,0)/total) : 0;
+  const crit = DATA.filter(d=>d.sla>=24).length;
+  const pend = DATA.filter(d=>d.substatus.toUpperCase().includes('PENDENTE')).length;
+
+  document.getElementById('kpiTotal').textContent = total;
+  document.getElementById('kpiMedia').textContent = slaLabel(media);
+  document.getElementById('kpiCrit').textContent = crit;
+  document.getElementById('kpiPend').textContent = pend;
+
+  renderCharts();
+  renderRankings();
+  renderPivot();
+  populateFilters();
+  renderTable();
+}
+
+function renderCharts() {
+  const ufCount = {};
+  DATA.forEach(d => { ufCount[d.uf] = (ufCount[d.uf]||0)+1; });
+
+  if (chartUF) chartUF.destroy();
+  const ufLabels = Object.keys(ufCount).sort();
+  chartUF = new Chart(document.getElementById('chartUF'), {
+    type:'bar',
+    data:{labels:ufLabels, datasets:[{data:ufLabels.map(k=>ufCount[k]),backgroundColor:ufLabels.map((_,i)=>['#378ADD','#1D9E75','#7F77DD','#D85A30','#EF9F27'][i%5]),borderRadius:4}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{grid:{display:false}}}}
+  });
+
+  // Aging SLA em faixas
+  const faixas = {'Até 4h':0,'4h–8h':0,'8h–12h':0,'12h–24h':0,'>24h':0};
+  DATA.forEach(d => {
+    const h = d.sla;
+    if (h <= 4) faixas['Até 4h']++;
+    else if (h <= 8) faixas['4h–8h']++;
+    else if (h <= 12) faixas['8h–12h']++;
+    else if (h <= 24) faixas['12h–24h']++;
+    else faixas['>24h']++;
+  });
+  const faixaLabels = Object.keys(faixas);
+  const faixaColors = ['#22C55E','#1D9E75','#EF9F27','#DC2626','#A32D2D'];
+
+  if (chartAging) chartAging.destroy();
+  chartAging = new Chart(document.getElementById('chartAging'), {
+    type:'bar',
+    data:{labels:faixaLabels, datasets:[{data:faixaLabels.map(k=>faixas[k]),backgroundColor:faixaColors,borderRadius:4}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{grid:{display:false}}}}
+  });
+}
+
+function renderRankings() {
+  const clientes = {}, cidades = {};
+  DATA.forEach(d => {
+    clientes[d.cliente||'N/D'] = (clientes[d.cliente||'N/D']||0)+1;
+    cidades[d.cidade||'N/D'] = (cidades[d.cidade||'N/D']||0)+1;
+  });
+  document.getElementById('rankClientes').innerHTML = Object.entries(clientes).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n,v])=>
+    `<div class="rank-item"><span class="rank-name">${n}</span><span class="badge badge-blue">${v}</span></div>`
+  ).join('');
+  document.getElementById('rankCidades').innerHTML = Object.entries(cidades).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n,v])=>
+    `<div class="rank-item"><span class="rank-name">${n}</span><span class="badge badge-teal">${v}</span></div>`
+  ).join('');
+}
+
+function renderPivot() {
+  const groups = {};
+  DATA.forEach(d => {
+    const key = d.cluster;
+    if (!groups[key]) groups[key] = {cluster:d.cluster, eps:d.eps, color:d.clusterColor, count:0};
+    groups[key].count++;
+  });
+  const sorted = CLUSTER_ORDER.filter(c=>groups[c]).map(c=>groups[c])
+    .concat(Object.keys(groups).filter(c=>!CLUSTER_ORDER.includes(c)).map(c=>groups[c]));
+  const maxCount = Math.max(...sorted.map(g=>g.count), 1);
+  const total = DATA.length;
+  const COLORS = {blue:'#378ADD',purple:'#7F77DD',teal:'#1D9E75',green:'#639922',amber:'#EF9F27',red:'#E24B4A'};
+
+  document.getElementById('pivotBody').innerHTML = sorted.map(g => {
+    const pct = total ? Math.round(g.count / total * 100) : 0;
+    const barW = Math.round(g.count / maxCount * 100);
+    return `<tr>
+      <td><span class="cluster-badge badge-${g.color}">${g.cluster}</span></td>
+      <td style="font-size:12px">${g.eps}</td>
+      <td style="width:40%"><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;background:#f0f0f0;border-radius:4px;height:8px"><div class="pivot-bar" style="width:${barW}%;background:${COLORS[g.color]||COLORS.blue}"></div></div><span style="font-size:11px;color:var(--muted);min-width:32px">${pct}%</span></div></td>
+      <td style="text-align:center"><span style="font-weight:700;font-size:15px">${g.count}</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('pivotFoot').innerHTML = `<tr><td colspan="3" style="font-size:13px">Total</td><td style="text-align:center;font-size:15px">${total}</td></tr>`;
+}
+
+function populateFilters() {
+  const ufs = [...new Set(DATA.map(d=>d.uf))].sort();
+  const clusters = [...new Set(DATA.map(d=>d.cluster))].sort();
+  const cidades = [...new Set(DATA.map(d=>d.cidade))].sort();
+  const fUF = document.getElementById('fUF'), fCl = document.getElementById('fCluster'), fCi = document.getElementById('fCidade');
+  const prev = {uf:fUF.value, cl:fCl.value, ci:fCi.value};
+  fUF.innerHTML = '<option value="">Todas UF</option>' + ufs.map(u=>`<option value="${u}">${u}</option>`).join('');
+  fCl.innerHTML = '<option value="">Todos clusters</option>' + clusters.map(c=>`<option value="${c}">${c}</option>`).join('');
+  fCi.innerHTML = '<option value="">Todas cidades</option>' + cidades.map(c=>`<option value="${c}">${c}</option>`).join('');
+  fUF.value = prev.uf; fCl.value = prev.cl; fCi.value = prev.ci;
+}
+
+function getFiltered() {
+  const fUF = document.getElementById('fUF').value;
+  const fCl = document.getElementById('fCluster').value;
+  const fCi = document.getElementById('fCidade').value;
+  const fSLA = document.getElementById('fSLA').value;
+  return DATA.filter(d => {
+    if (fUF && d.uf !== fUF) return false;
+    if (fCl && d.cluster !== fCl) return false;
+    if (fCi && d.cidade !== fCi) return false;
+    if (fSLA === '4' && d.sla > 4) return false;
+    if (fSLA === '8' && (d.sla <= 4 || d.sla > 8)) return false;
+    if (fSLA === '12' && (d.sla <= 8 || d.sla > 12)) return false;
+    if (fSLA === '24' && (d.sla <= 12 || d.sla > 24)) return false;
+    if (fSLA === '99' && d.sla <= 24) return false;
+    return true;
+  });
+}
+
+function renderTable() {
+  const filtered = getFiltered();
+  const groups = {};
+  const order = [];
+  filtered.forEach(d => {
+    const key = d.cluster + '|' + d.eps;
+    if (!groups[key]) { groups[key] = []; order.push(key); }
+    groups[key].push(d);
+  });
+  order.sort((a,b) => {
+    const ca = a.split('|')[0], cb = b.split('|')[0];
+    const ia = CLUSTER_ORDER.indexOf(ca), ib = CLUSTER_ORDER.indexOf(cb);
+    return (ia===-1?99:ia) - (ib===-1?99:ib);
+  });
+  order.forEach(k => groups[k].sort((a,b) => b.sla - a.sla));
+
+  const el = document.getElementById('tableCaptureInner');
+  if (!filtered.length) { el.innerHTML = '<div class="empty-state">Nenhum chamado encontrado</div>'; return; }
+
+  let html = '';
+  order.forEach(key => {
+    const [cl, eps] = key.split('|');
+    const arr = groups[key];
+    const color = arr[0].clusterColor;
+    html += `<div class="group-header">
+      <span class="cluster-badge badge-${color}">${cl}</span>
+      <span style="font-size:12px;color:#6b7280">${eps}</span>
+      <span style="font-size:11px;color:#9ca3af;margin-left:auto">${arr.length} chamado${arr.length>1?'s':''}</span>
+    </div>`;
+    html += `<table class="group-table"><thead><tr>
+      <th class="col-ticket">Ticket</th>
+      <th class="col-cliente">Cliente</th>
+      <th class="col-cfinal">Cliente final</th>
+      <th class="col-cidade">Cidade</th>
+      <th class="col-sla" style="text-align:center">SLA</th>
+      <th class="col-faixa" style="text-align:center">Faixa</th>
+      <th class="col-substatus">Substatus</th>
+    </tr></thead><tbody>`;
+    arr.forEach(d => {
+      const sc = slaClass(d.sla);
+      const fi = faixaInfo(d.sla);
+      html += `<tr>
+        <td style="font-family:monospace;font-size:11px;white-space:nowrap">${d.ticket}</td>
+        <td class="cell-wrap">${d.cliente}</td>
+        <td class="cell-wrap">${d.clienteFinal}</td>
+        <td>${d.cidade}</td>
+        <td style="text-align:center"><span class="sla-badge ${sc}">${slaLabel(d.sla)}</span></td>
+        <td style="text-align:center"><span class="faixa-badge ${fi.css}">${fi.label}</span></td>
+        <td class="cell-wrap" style="color:#6b7280">${d.substatus}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+  });
+  el.innerHTML = html;
+}
+
+async function copyAsImage(elementId, btn) {
+  btn.classList.add('loading'); btn.disabled = true;
+  const label = btn.querySelector('span');
+  const orig = label.textContent;
+  label.textContent = 'Gerando...';
+  try {
+    const el = document.getElementById(elementId);
+    const canvas = await html2canvas(el, {scale:2, backgroundColor:'#ffffff', useCORS:true, logging:false, width:el.scrollWidth, windowWidth:el.scrollWidth+40});
+    canvas.toBlob(async blob => {
+      try {
+        await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+        btn.classList.remove('loading'); btn.classList.add('copied');
+        label.textContent = 'Copiado!';
+        showToast('Imagem copiada para a área de transferência','ok');
+      } catch(e) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href=url; a.download=elementId+'_'+new Date().toISOString().slice(0,10)+'.png';
+        a.click(); URL.revokeObjectURL(url);
+        btn.classList.remove('loading'); btn.classList.add('copied');
+        label.textContent = 'Baixado!';
+        showToast('Imagem baixada','ok');
+      }
+      setTimeout(()=>{btn.classList.remove('copied');btn.disabled=false;label.textContent=orig;},2500);
+    },'image/png');
+  } catch(err) {
+    btn.classList.remove('loading'); btn.disabled=false; label.textContent=orig;
+    showToast('Erro: '+err.message,'err');
+  }
+}
+
+function showToast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast toast-'+(type||'ok')+' show';
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+['fUF','fCluster','fCidade','fSLA'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', renderTable);
+});
+
+document.getElementById('fileInput').addEventListener('change', function(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const wb=XLSX.read(ev.target.result,{type:'array',cellDates:true});
+    parseXLSX(wb);
+    showToast('Arquivo carregado: '+file.name,'ok');
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+// Auto-refresh SLA a cada 5 minutos
+setInterval(()=>{ recalcSLA(); render(); }, 300000);
+
+const INITIAL_DATA = [
+  {ticket:"11062026-94814",cliente:"M E L SERVICOS EM SAUDE LTDA",clienteFinal:"218287 M E L SERVICOS EM SAUDE LTDA SUPERCLINICA | indisponibilidade | reabertura 09062026-82736",depto:"CMO - Reparo",tipo:"REPARO",abertura:new Date(2026,5,11,14,46,27),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"SAO LUIS",uf:"MA"},
+  {ticket:"13062026-92240",cliente:"MUNICIPIO DE SAO LUIS",clienteFinal:"Atendimento para: CE AMERICA DO NORTE SLS-216233-00384",depto:"CMO - Reparo",tipo:"REPARO",abertura:new Date(2026,5,13,20,20,32),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"SAO LUIS",uf:"MA"},
+  {ticket:"15062026-52520",cliente:"O R CAVALCANTE JUNIOR",clienteFinal:"CAVALCANTE JUNIOR STAR1 INTERNET | INDISPONIBILIDADE",depto:"CMO - Reparo",tipo:"ADEQUAÇÃO DE REDE",abertura:new Date(2026,5,15,16,58,44),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"PRESIDENTE DUTRA",uf:"MA"},
+  {ticket:"15062026-50518",cliente:"MUNICIPIO DE SAO LUIS",clienteFinal:"Atendimento para: CAIS - PRAIA GRANDE - SLS-216233-00590",depto:"CMO - Reparo",tipo:"REPARO",abertura:new Date(2026,5,15,11,51,1),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"601873",cidade:"SAO LUIS",uf:"MA"},
+  {ticket:"16062026-68945",cliente:"TIM S A",clienteFinal:"ABERTURA DE CHAMADO-EVE260600000907",depto:"CMO - REPARO SWAP",tipo:"REPARO",abertura:new Date(2026,5,16,16,20,44),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"ABAETETUBA",uf:"PA"},
+  {ticket:"17062026-42784",cliente:"MUNICIPIO DE SAO LUIS",clienteFinal:"Atendimento para: UEB OLINDA DESTERRO - SLS-216233-00187",depto:"CMO - Reparo",tipo:"REPARO",abertura:new Date(2026,5,17,19,10,39),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"SAO LUIS",uf:"MA"},
+  {ticket:"17062026-53889",cliente:"VIEIRA",clienteFinal:"Rede offline",depto:"CMO - Reparo",tipo:"REPARO",abertura:new Date(2026,5,17,9,20,55),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"PINHEIRO",uf:"MA"},
+  {ticket:"18062026-14136",cliente:"MUNICIPIO DE SAO LUIS",clienteFinal:"Atendimento para: SEMCAS - ILPI - Instituto de Longa PermanEncia para Idosos Municipal",depto:"CMO - Reparo",tipo:"REPARO",abertura:new Date(2026,5,18,18,50,48),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"SAO LUIS",uf:"MA"},
+  {ticket:"18062026-84756",cliente:"LABORATORIO CEDRO LTDA",clienteFinal:"LABORATORIO CEDRO LTDA | INDISPONIBILIDADE | SLS/L2L/204817/19",depto:"CMO - Reparo",tipo:"REPARO",abertura:new Date(2026,5,18,16,46,27),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"SAO LUIS",uf:"MA"},
+  {ticket:"18062026-12692",cliente:"FUNDO MUNICIPAL DE SAUDE DE SAO LUIS MARANHAO",clienteFinal:"Atendimento para: CEMARC E SVES - VLAN 1845 SLS-216233-00047",depto:"CMO - Reparo",tipo:"REPARO",abertura:new Date(2026,5,18,15,20,52),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"SAO LUIS",uf:"MA"},
+  {ticket:"18062026-22747",cliente:"MUNICIPIO DE SAO LUIS",clienteFinal:"Atendimento para: Anexo Nossa Senhora de Nazare - UEB ENS FUND HORTENCIA PINHO e UEB EVANDRO BESSA - Samara - SLS-216233-00493",depto:"CMO - Reparo",tipo:"REPARO",abertura:new Date(2026,5,18,14,50,53),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"SAO LUIS",uf:"MA"},
+  {ticket:"18062026-99091",cliente:"MUNICIPIO DE SAO LUIS",clienteFinal:"Atendimento para: SEMSA - SEDE - SLS-00216233-00051",depto:"CMO - Reparo",tipo:"REPARO",abertura:new Date(2026,5,18,3,30,35),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"SAO LUIS",uf:"MA"},
+  {ticket:"19062026-54657",cliente:"ULTRACONNECT COM E SERVICO LTDA",clienteFinal:"ULTRACONNECT | INDISPONIBILIDADE | MTUB/IPD/223401/1",depto:"CMO - Reparo",tipo:"REPARO",abertura:new Date(2026,5,19,21,42,7),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"MARITUBA",uf:"PA"},
+  {ticket:"19062026-92339",cliente:"NACIONAL GAS BUTANO DISTRIBUIDORA LTDA",clienteFinal:"NACIONAL GAS BUTANO DISTRIBUIDORA LTDA GEQ || INDISPONIBILIDADE || ITZ/IPD/201857/1",depto:"CMO - Reparo",tipo:"REPARO",abertura:new Date(2026,5,19,20,11,56),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"IMPERATRIZ",uf:"MA"},
+  {ticket:"19062026-30914",cliente:"FUNDO MUNICIPAL DE SAUDE DE SAO LUIS MARANHAO",clienteFinal:"Atendimento para: C C DE ZOONOSE SLS-216233-00052",depto:"CMO - Reparo",tipo:"REPARO",abertura:new Date(2026,5,19,14,10,37),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"SAO JOSE DE RIBAMAR",uf:"MA"},
+  {ticket:"19062026-88249",cliente:"FUNDO ESPECIAL DE MODERNIZACAO E REAPARELHAMENTO",clienteFinal:"ABERTURA REPARO: INOPERANTE POSTO RODOVIARIA - SLS/L2L/49019/69",depto:"CMO - Reparo",tipo:"REPARO",abertura:new Date(2026,5,19,13,51,0),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"SAO LUIS",uf:"MA"},
+  {ticket:"19062026-80323",cliente:"FUNDO ESPECIAL DE MODERNIZACAO E REAPARELHAMENTO",clienteFinal:"ALERTA: CLI | TJMA.SLS.12.JUIZADO.ESPECIAL.CIVEL.L2L.49495.73 - FALHA",depto:"CMO - Reparo",tipo:"REPARO",abertura:new Date(2026,5,19,13,10,37),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"SAO LUIS",uf:"MA"},
+  {ticket:"19062026-52217",cliente:"SERVICO SOCIAL DA INDUSTRIA",clienteFinal:"SERVICO SOCIAL DA INDUSTRIA SESI DEP REGIONAL DO MARANHAO | INDISPONIBILIDADE | SLS/IPD/214467/3",depto:"CMO - Reparo",tipo:"REPARO",abertura:new Date(2026,5,19,11,9,7),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"SAO LUIS",uf:"MA"},
+  {ticket:"19062026-95418",cliente:"CLARO SA",clienteFinal:"CLARO S A | INDISPONIBILIDADE | BLARGC3163",depto:"CMO - Reparo",tipo:"REPARO",abertura:new Date(2026,5,19,10,21,8),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"OUREM",uf:"PA"},
+  {ticket:"19062026-66726",cliente:"MAGAZINE LILIANI S A",clienteFinal:"Alerta de Monitoramento LOJA72 designação ZED-IPD-F-48504",depto:"CMO - Reparo",tipo:"REPARO",abertura:new Date(2026,5,19,9,1,9),sla:0,status:"Em Espera",substatus:"PENDENTE AGENDAMENTO",bdesk:"",cidade:"ZE DOCA",uf:"MA"}
+];
+INITIAL_DATA.forEach(d => { const cl = getCluster(d.uf, d.cidade); d.cluster=cl.cluster; d.eps=cl.eps; d.clusterColor=cl.color; });
+DATA = INITIAL_DATA;
+recalcSLA();
+render();
+</script>
+<script src="./painel-atrix-redesign.js"></script>
+</body>
+</html>

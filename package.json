@@ -1,0 +1,12 @@
+{
+  "name": "painel-jarvis-marcellus",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Painel Jarvis - Marcellus pronto para GitHub e Vercel.",
+  "scripts": {
+    "check": "node scripts/check-static.mjs",
+    "dev": "npx serve .",
+    "vercel:dev": "npx vercel dev",
+    "vercel:deploy": "npx vercel --prod"
+  }
+}

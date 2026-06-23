@@ -1,0 +1,13 @@
+Jarvis_mcll/
+data/local/
+*.xlsx
+*.xls
+*.csv
+PROMPT_REDESIGN_ATRIX.md
+painel_b2b_abertos*.html
+.github/
+docs/
+scripts/
+node_modules/
+.env
+.env.*
