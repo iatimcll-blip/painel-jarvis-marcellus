@@ -817,6 +817,14 @@ function exportPNG(){
 
 /* ============ INIT ============ */
 renderRede(); renderB2B(); renderFuel(); renderOFS();
+
+/* Navegação direta por URL param: painel_secundario.html?tab=b2b&metas=1 */
+(function(){
+  var p = new URLSearchParams(location.search);
+  var tab = p.get('tab');
+  if (tab) switchTab(tab);
+  if (p.get('metas') === '1') { setTimeout(openMetas, 250); }
+})();
 </script>
 </body>
 </html>

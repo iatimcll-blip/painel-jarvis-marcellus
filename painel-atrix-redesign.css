@@ -577,6 +577,81 @@ span[style*="margin-left:auto;font-size:11px;font-weight:400;color:#6b7280"] {
 [hidden] { display: none !important; }
 
 /* ================================================================
+   SECONDARY NAV BAR — tabs do painel secundário no topo do primário
+   ================================================================ */
+.redesign-sec-nav {
+  position: sticky;
+  top: 68px;
+  z-index: 49;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 20px;
+  height: 48px;
+  background: rgba(18,24,33,.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.redesign-sec-nav::-webkit-scrollbar { display: none; }
+
+.redesign-sec-nav-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  white-space: nowrap;
+  padding-right: 10px;
+  border-right: 1px solid var(--border);
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+.redesign-sec-tab {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  padding: 6px 13px;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background .12s, color .12s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+}
+.redesign-sec-tab:hover {
+  color: var(--text);
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+.redesign-sec-tab svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+.redesign-sec-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  flex-shrink: 0;
+  margin: 0 6px;
+}
+
+.redesign-sec-metas {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .redesign-sec-nav { top: 0; }
+  .redesign-sec-nav-label { display: none; }
+}
+
+/* ================================================================
    RESPONSIVE
    ================================================================ */
 @media (max-width: 960px) {
