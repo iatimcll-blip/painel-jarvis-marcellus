@@ -373,6 +373,18 @@
       icon: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>'
     },
     {
+      label: "Frota/Combustíveis",
+      href:  "painel_frota.html",
+      active: false,
+      icon: '<path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v5"/><circle cx="18" cy="17" r="2"/><circle cx="7" cy="17" r="2"/><path d="M5 17H7m10 0h2"/>'
+    },
+    {
+      label: "Central de Dados",
+      href:  "central_dados.html",
+      active: false,
+      icon: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>'
+    },
+    {
       label: "Conf Metas",
       href:  "painel_secundario.html?tab=dados&metas=1",
       active: false,

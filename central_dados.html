@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Central de Dados · MCLL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#0a0e14;--surface:#121821;--surface-2:#1a2230;--border:#232c3b;
+  --border-2:#2e3a4d;--text:#e8edf4;--text-2:#8a96a8;--text-3:#5b6677;
+  --ok:#2ecc8f;--ok-bg:rgba(46,204,143,.12);--warn:#f5a623;--warn-bg:rgba(245,166,35,.12);
+  --crit:#ff5c5c;--crit-bg:rgba(255,92,92,.12);--accent:#f59e0b;--accent-2:#3b82f6;
+  --r:10px;--r-lg:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);
+  font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;padding:0 0 72px}
+.mono{font-family:'JetBrains Mono',monospace}
+.wrap{max-width:1280px;margin:0 auto;padding:0 24px}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:50;background:rgba(10,14,20,.88);backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.hd{display:flex;align-items:center;justify-content:space-between;height:68px}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#d97706);
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:#0a0e14}
+.brand h1{font-size:17px;font-weight:700;letter-spacing:-.2px}
+.brand .sub{font-size:11.5px;color:var(--text-2);font-weight:500;letter-spacing:.3px}
+.hd-right{display:flex;align-items:center;gap:10px}
+.pulse-tag{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--text-2);
+  background:var(--surface);padding:7px 13px;border-radius:20px;border:1px solid var(--border)}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:beat 2s infinite}
+@keyframes beat{0%{box-shadow:0 0 0 0 rgba(46,204,143,.5)}70%{box-shadow:0 0 0 7px rgba(46,204,143,0)}100%{box-shadow:0 0 0 0 rgba(46,204,143,0)}}
+.btn{font-family:inherit;font-size:13px;font-weight:600;padding:9px 15px;border-radius:var(--r);
+  border:1px solid var(--border-2);background:var(--surface-2);color:var(--text);cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;transition:.15s;text-decoration:none;white-space:nowrap}
+.btn:hover{background:var(--border);border-color:var(--text-3)}
+.btn-accent{background:var(--accent);border-color:var(--accent);color:#0a0e14}
+.btn-accent:hover{background:#fbbf3f}
+.btn-sm{font-size:11.5px;padding:5px 11px;min-height:30px}
+.btn svg,.gnav-tab svg{width:14px;height:14px}
+
+/* GLOBAL NAV */
+.global-nav{position:sticky;top:68px;z-index:49;display:flex;align-items:center;gap:2px;
+  padding:0 20px;height:48px;background:rgba(18,24,33,.95);backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);
+  overflow-x:auto;scrollbar-width:none}
+.global-nav::-webkit-scrollbar{display:none}
+.gnav-tab{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--text-2);
+  padding:6px 13px;border-radius:8px;text-decoration:none;display:inline-flex;
+  align-items:center;gap:6px;transition:.12s;white-space:nowrap;border:1px solid transparent;flex-shrink:0}
+.gnav-tab:hover{color:var(--text);background:var(--surface-2);border-color:var(--border)}
+.gnav-tab.active{color:var(--text);background:var(--surface-2);border-color:var(--border-2);
+  box-shadow:inset 0 0 0 1.5px var(--accent)}
+
+/* PAGE HEAD */
+.page-head{padding:28px 0 22px;border-bottom:1px solid var(--border);margin-bottom:28px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
+.page-head-left h2{font-size:22px;font-weight:700;letter-spacing:-.3px;display:flex;align-items:center;gap:12px}
+.page-head-left h2 .ico{width:34px;height:34px;border-radius:9px;background:var(--surface-2);
+  display:flex;align-items:center;justify-content:center;border:1px solid var(--border)}
+.page-head-left h2 svg{width:18px;height:18px;color:var(--accent)}
+.page-head-left p{font-size:13px;color:var(--text-2);margin-top:6px;margin-left:46px}
+.status-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.status-pill{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;
+  font-size:11.5px;font-weight:600;border:1px solid var(--border);background:var(--surface-2)}
+.status-pill .dot{width:7px;height:7px;border-radius:50%}
+.dot-ok{background:var(--ok)}.dot-empty{background:var(--text-3)}.dot-warn{background:var(--warn)}
+
+/* MODULE GRID */
+.module-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px}
+@media(max-width:768px){.module-grid{grid-template-columns:1fr}}
+
+.module-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  overflow:hidden;transition:.18s;position:relative}
+.module-card:hover{border-color:var(--border-2)}
+.module-card.has-data{border-color:rgba(46,204,143,.25)}
+.module-card.has-data::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ok)}
+
+.mc-header{display:flex;align-items:center;gap:13px;padding:18px 20px;border-bottom:1px solid var(--border)}
+.mc-icon{width:36px;height:36px;border-radius:9px;background:var(--surface-2);
+  display:flex;align-items:center;justify-content:center;border:1px solid var(--border);flex-shrink:0}
+.mc-icon svg{width:17px;height:17px;color:var(--accent)}
+.mc-info{flex:1;min-width:0}
+.mc-name{font-size:15px;font-weight:700;letter-spacing:-.1px}
+.mc-status{margin-top:3px;font-size:11.5px;color:var(--text-3);font-weight:500}
+.mc-status.loaded{color:var(--ok)}
+.mc-actions{display:flex;gap:6px;flex-shrink:0}
+
+.mc-body{padding:16px 20px}
+
+.upload-zone{border:1.5px dashed var(--border-2);border-radius:var(--r);padding:18px 16px;
+  text-align:center;cursor:pointer;transition:.15s;background:var(--surface-2)}
+.upload-zone:hover{border-color:var(--accent);background:rgba(245,158,11,.05)}
+.upload-zone svg{width:24px;height:24px;color:var(--text-3);margin-bottom:6px}
+.upload-zone .uz-title{font-size:13px;font-weight:600;color:var(--text)}
+.upload-zone .uz-sub{font-size:11.5px;color:var(--text-3);margin-top:3px}
+input[type=file]{display:none}
+
+.mc-info-block{background:var(--surface-2);border-radius:8px;padding:12px 14px;margin-top:12px}
+.mc-info-row{display:flex;justify-content:space-between;align-items:center;
+  padding:4px 0;border-bottom:1px solid var(--border);font-size:12px}
+.mc-info-row:last-child{border-bottom:none;padding-bottom:0}
+.mc-info-row .lbl{color:var(--text-3);font-weight:500}
+.mc-info-row .val{color:var(--text);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:11.5px}
+
+.col-guide{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
+.col-guide-lbl{font-size:11px;color:var(--text-3);font-weight:600;width:100%;margin-bottom:2px}
+.col-tag{font-size:10.5px;font-weight:600;background:rgba(30,40,55,.8);border:1px solid var(--border-2);
+  color:var(--text-2);padding:2px 8px;border-radius:5px;font-family:'JetBrains Mono',monospace}
+
+.mc-footer{display:flex;gap:8px;padding:14px 20px;border-top:1px solid var(--border);background:rgba(0,0,0,.1)}
+.mc-link{font-size:12.5px;font-weight:600;color:var(--accent);text-decoration:none;
+  display:flex;align-items:center;gap:5px;transition:.15s;margin-left:auto}
+.mc-link:hover{color:var(--text)}
+.mc-link svg{width:13px;height:13px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;z-index:200;padding:11px 18px;border-radius:10px;
+  font-size:13px;font-weight:600;display:none;align-items:center;gap:9px;
+  animation:fadeIn .2s ease;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.toast.show{display:flex}
+.toast-ok{background:var(--ok);color:#0a0e14}
+.toast-err{background:var(--crit);color:#fff}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap hd">
+    <div class="brand">
+      <div class="logo">A</div>
+      <div>
+        <h1>Central de Dados</h1>
+        <div class="sub">MCLL · Hub de Upload e Gerenciamento de Bases Operacionais</div>
+      </div>
+    </div>
+    <div class="hd-right">
+      <div class="pulse-tag"><span class="pulse"></span> <span id="totalLoaded">0 bases carregadas</span></div>
+      <button class="btn" onclick="clearAll()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        Limpar tudo
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- NAVEGAÇÃO GLOBAL -->
+<div class="global-nav">
+  <a href="painel_atrix.html" class="gnav-tab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    B2B Abertos
+  </a>
+  <a href="painel_secundario.html?tab=b2b" class="gnav-tab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    B2B Encerrados
+  </a>
+  <a href="painel_secundario.html?tab=rede" class="gnav-tab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+    Redes
+  </a>
+  <a href="painel_secundario.html?tab=ofs" class="gnav-tab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    OFS
+  </a>
+  <a href="painel_frota.html" class="gnav-tab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v5"/><circle cx="18" cy="17" r="2"/><circle cx="7" cy="17" r="2"/><path d="M5 17H7m10 0h2"/></svg>
+    Frota/Combustíveis
+  </a>
+  <a href="central_dados.html" class="gnav-tab active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+    Central de Dados
+  </a>
+  <a href="painel_secundario.html?tab=dados&metas=1" class="gnav-tab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.51 1.65 1.65 0 0 0 10 3V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Conf Metas
+  </a>
+</div>
+
+<div class="wrap">
+  <div class="page-head">
+    <div class="page-head-left">
+      <h2>
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span>
+        Central de Dados
+      </h2>
+      <p>Carregue as bases operacionais de cada módulo. Os dados são compartilhados entre os painéis via armazenamento local.</p>
+    </div>
+    <div class="status-bar" id="statusBar"></div>
+  </div>
+
+  <div class="module-grid" id="moduleGrid"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ CONFIGURAÇÃO DOS MÓDULOS ============ */
+const MODULES = [
+  {
+    id: 'b2b_abertos',
+    key: 'bd_b2b_abertos',
+    name: 'B2B Abertos',
+    desc: 'Tickets de suporte em aberto',
+    panelUrl: 'painel_atrix.html',
+    panelLabel: 'Abrir Painel B2B Abertos',
+    icon: '<path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/>',
+    sheets: ['aberto','b2b','ticket','base'],
+    cols: ['numero_ticket','status','sla_horas','cluster','substatus','data_abertura','uf_servico']
+  },
+  {
+    id: 'b2b_encerrados',
+    key: 'bd_b2b_enc',
+    name: 'B2B Encerrados',
+    desc: 'Tickets encerrados · SLA e faixas de atraso',
+    panelUrl: 'painel_secundario.html?tab=b2b',
+    panelLabel: 'Abrir Painel B2B Encerrados',
+    icon: '<path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/>',
+    sheets: ['encerrado','fechado','historico'],
+    cols: ['tempo_ccs','tempo_b2b','tempo_giga','idservico','data_fechamento','uf_servico']
+  },
+  {
+    id: 'rede',
+    key: 'bd_rede',
+    name: 'Redes',
+    desc: 'Backbone e Acesso · Prazo, TME e Outliers',
+    panelUrl: 'painel_secundario.html?tab=rede',
+    panelLabel: 'Abrir Painel Redes',
+    icon: '<rect x="2" y="2" width="6" height="6" rx="1"/><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>',
+    sheets: ['backbone','planilha1','acesso','rede'],
+    cols: ['PRAZO','OUTLIER','TMR','TME','UF','DATA_ABERTURA']
+  },
+  {
+    id: 'ofs',
+    key: 'bd_ofs',
+    name: 'OFS · Produtividade',
+    desc: 'Ordens de serviço · Campo e técnicos',
+    panelUrl: 'painel_secundario.html?tab=ofs',
+    panelLabel: 'Abrir Painel OFS',
+    icon: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+    sheets: ['resumo_recurso','resumo_data','produtividade','ofs'],
+    cols: ['Recurso','Total','concluído','pendente','suspenso','cancelado']
+  },
+  {
+    id: 'frota',
+    key: 'bd_frota',
+    name: 'Frota / Combustíveis',
+    desc: 'Consumo, eficiência km/L e balizador por veículo',
+    panelUrl: 'painel_frota.html',
+    panelLabel: 'Abrir Painel Frota',
+    icon: '<path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v5"/><circle cx="18" cy="17" r="2"/><circle cx="7" cy="17" r="2"/><path d="M5 17H7m10 0h2"/>',
+    sheets: ['frota','combustivel','alelo','fuel','veiculo'],
+    cols: ['estado','placa','km_real','litros_real','balizador','efic_kml','baliz_pct','desvio_pct']
+  }
+];
+
+/* ============ STORAGE ============ */
+function getRecord(key){
+  try{return JSON.parse(localStorage.getItem(key)||'null');}catch(e){return null;}
+}
+function setRecord(key,data){
+  try{localStorage.setItem(key,JSON.stringify(data));}catch(e){showToast('Erro: armazenamento cheio — limpe dados antigos','err');}
+}
+function clearRecord(key){try{localStorage.removeItem(key);}catch(e){}}
+
+function fmtDate(ts){
+  if(!ts)return'—';
+  const d=new Date(ts);
+  return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+
+/* ============ TOAST ============ */
+let toastTimer;
+function showToast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast toast-'+(type||'ok')+' show';
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+/* ============ RENDER CARDS ============ */
+function renderGrid(){
+  const grid=document.getElementById('moduleGrid');
+  grid.innerHTML='';
+  let loaded=0;
+
+  MODULES.forEach(mod=>{
+    const rec=getRecord(mod.key);
+    const hasData=!!rec;
+    if(hasData)loaded++;
+
+    const card=document.createElement('div');
+    card.className='module-card'+(hasData?' has-data':'');
+    card.id='card-'+mod.id;
+
+    const statusText=hasData
+      ? rec.records+' registros · '+fmtDate(rec.loadedAt)
+      : 'Sem dados carregados';
+    const statusClass=hasData?'loaded':'';
+
+    card.innerHTML=`
+      <div class="mc-header">
+        <div class="mc-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${mod.icon}</svg></div>
+        <div class="mc-info">
+          <div class="mc-name">${mod.name}</div>
+          <div class="mc-status ${statusClass}" id="status-${mod.id}">${statusText}</div>
+        </div>
+        <div class="mc-actions">
+          ${hasData?`<button class="btn btn-sm" onclick="clearModule('${mod.id}','${mod.key}')" title="Remover base">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          </button>`:''}
+        </div>
+      </div>
+      <div class="mc-body">
+        <div class="upload-zone" onclick="document.getElementById('file-${mod.id}').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div class="uz-title">${hasData?'Substituir base .xlsx':'Carregar base .xlsx'}</div>
+          <div class="uz-sub">${hasData?rec.fileName:'Clique para selecionar arquivo'}</div>
+        </div>
+        <input type="file" id="file-${mod.id}" accept=".xlsx,.xls" data-mod="${mod.id}" onchange="handleUpload(event)">
+        ${hasData?`
+        <div class="mc-info-block">
+          <div class="mc-info-row"><span class="lbl">Arquivo</span><span class="val">${rec.fileName}</span></div>
+          <div class="mc-info-row"><span class="lbl">Registros</span><span class="val">${rec.records.toLocaleString('pt-BR')}</span></div>
+          <div class="mc-info-row"><span class="lbl">Carregado em</span><span class="val">${fmtDate(rec.loadedAt)}</span></div>
+          ${rec.sheets?`<div class="mc-info-row"><span class="lbl">Abas lidas</span><span class="val">${rec.sheets}</span></div>`:''}
+        </div>`:''}
+        <div class="col-guide">
+          <span class="col-guide-lbl">Colunas esperadas:</span>
+          ${mod.cols.map(c=>`<span class="col-tag">${c}</span>`).join('')}
+        </div>
+      </div>
+      <div class="mc-footer">
+        <span style="font-size:11.5px;color:var(--text-3)">${mod.desc}</span>
+        <a href="${mod.panelUrl}" class="mc-link">
+          ${mod.panelLabel}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  /* Status bar */
+  const sb=document.getElementById('statusBar');
+  sb.innerHTML=MODULES.map(m=>{
+    const r=getRecord(m.key);
+    return`<span class="status-pill">
+      <span class="dot ${r?'dot-ok':'dot-empty'}"></span>
+      ${m.name.split(' ')[0]+(m.name.split(' ')[1]||''?(' '+m.name.split(' ')[1]):'').substring(0,10)}
+    </span>`;
+  }).join('');
+
+  document.getElementById('totalLoaded').textContent=loaded+' base'+(loaded===1?'':'s')+' carregada'+(loaded===1?'':'s');
+}
+
+/* ============ UPLOAD ============ */
+function num(v){const n=parseFloat(String(v).replace(',','.'));return isNaN(n)?NaN:n}
+
+function handleUpload(e){
+  const input=e.target;
+  const modId=input.dataset.mod;
+  const mod=MODULES.find(m=>m.id===modId);
+  const file=input.files[0]; if(!file||!mod)return;
+
+  const btn=document.querySelector('#card-'+modId+' .upload-zone .uz-title');
+  if(btn)btn.textContent='Processando…';
+
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+
+      /* Detecta abas relevantes */
+      const found=wb.SheetNames.filter(s=>mod.sheets.some(t=>s.toLowerCase().includes(t)));
+      const targetSheet=found[0]||wb.SheetNames[0];
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[targetSheet]);
+
+      if(!rows.length){showToast('Arquivo sem dados na aba '+targetSheet,'err');return;}
+
+      /* Salva metadados + amostra no localStorage */
+      const record={
+        fileName:file.name,
+        loadedAt:Date.now(),
+        records:rows.length,
+        sheets:found.join(', ')||targetSheet,
+        cols:Object.keys(rows[0]||{}).slice(0,12)
+      };
+
+      /* Para frota: salva linhas completas (até 3000) para uso no painel */
+      if(modId==='frota'){
+        try{
+          localStorage.setItem(mod.key+'_rows',JSON.stringify({
+            rows:rows.slice(0,3000),loadedAt:Date.now()
+          }));
+        }catch(err){}
+      }
+
+      setRecord(mod.key,record);
+      showToast(file.name+' · '+rows.length.toLocaleString('pt-BR')+' registros carregados ✓','ok');
+      renderGrid();
+
+    }catch(err){
+      showToast('Erro ao processar '+file.name+' — verifique o formato','err');
+      console.error(err);
+    }
+    input.value='';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/* ============ CLEAR ============ */
+function clearModule(modId,key){
+  if(!confirm('Remover a base de '+MODULES.find(m=>m.id===modId).name+'?'))return;
+  clearRecord(key);
+  clearRecord(key+'_rows');
+  renderGrid();
+  showToast('Base removida','ok');
+}
+
+function clearAll(){
+  if(!confirm('Remover TODAS as bases carregadas?'))return;
+  MODULES.forEach(m=>{clearRecord(m.key);clearRecord(m.key+'_rows');});
+  renderGrid();
+  showToast('Todas as bases removidas','ok');
+}
+
+/* ============ INIT ============ */
+renderGrid();
+</script>
+</body>
+</html>
