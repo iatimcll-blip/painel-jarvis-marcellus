@@ -343,16 +343,41 @@
   }
 
   /* ============================================================
-     SECONDARY NAV BAR
-     Injeta abaixo do .header os botões de navegação do painel
-     secundário: Rede, B2B, Combustível, OFS, Dados + Metas.
+     GLOBAL NAV BAR
+     Barra sticky com os 5 módulos principais do sistema.
+     "B2B Abertos" fica ativo (página atual).
      ============================================================ */
-  var SEC_TABS = [
-    { key: "rede",        label: "Rede",        icon: '<rect x="2" y="2" width="6" height="6" rx="1"/><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>' },
-    { key: "b2b",         label: "B2B",         icon: '<path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/>' },
-    { key: "combustivel", label: "Combustível",  icon: '<path d="M3 22h12V4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/><path d="M15 9h2a2 2 0 0 1 2 2v6a1.5 1.5 0 0 0 3 0V8l-3-3"/><line x1="6" y1="7" x2="12" y2="7"/>' },
-    { key: "ofs",         label: "OFS",         icon: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>' },
-    { key: "dados",       label: "Dados",       icon: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>' }
+  var GLOBAL_NAV = [
+    {
+      label: "B2B Abertos",
+      href:  "painel_atrix.html",
+      active: true,
+      icon: '<path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/>'
+    },
+    {
+      label: "B2B Encerrados",
+      href:  "painel_secundario.html?tab=b2b",
+      active: false,
+      icon: '<path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/>'
+    },
+    {
+      label: "Redes",
+      href:  "painel_secundario.html?tab=rede",
+      active: false,
+      icon: '<rect x="2" y="2" width="6" height="6" rx="1"/><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>'
+    },
+    {
+      label: "OFS",
+      href:  "painel_secundario.html?tab=ofs",
+      active: false,
+      icon: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>'
+    },
+    {
+      label: "Conf Metas",
+      href:  "painel_secundario.html?tab=dados&metas=1",
+      active: false,
+      icon: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.51 1.65 1.65 0 0 0 10 3V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'
+    }
   ];
 
   function svgIcon(path) {
@@ -365,35 +390,14 @@
     var bar = document.createElement("div");
     bar.className = "redesign-sec-nav";
 
-    /* Label */
-    var lbl = document.createElement("span");
-    lbl.className = "redesign-sec-nav-label";
-    lbl.textContent = "Secundário";
-    bar.appendChild(lbl);
-
-    /* Tabs */
-    SEC_TABS.forEach(function (t) {
+    GLOBAL_NAV.forEach(function (item) {
       var a = document.createElement("a");
-      a.href = "painel_secundario.html?tab=" + t.key;
-      a.className = "redesign-sec-tab";
-      a.innerHTML = svgIcon(t.icon) + t.label;
+      a.href = item.href;
+      a.className = "redesign-sec-tab" + (item.active ? " active" : "");
+      a.innerHTML = svgIcon(item.icon) + item.label;
       bar.appendChild(a);
     });
 
-    /* Separador + botão Metas (abre o painel secundário na aba Metas) */
-    var sep = document.createElement("span");
-    sep.className = "redesign-sec-sep redesign-sec-metas";
-    bar.appendChild(sep);
-
-    var metas = document.createElement("a");
-    metas.href = "painel_secundario.html?tab=dados&metas=1";
-    metas.className = "redesign-sec-tab";
-    metas.innerHTML =
-      svgIcon('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.51 1.65 1.65 0 0 0 10 3V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>') +
-      "Metas";
-    bar.appendChild(metas);
-
-    /* Insere entre .header e o restante do body */
     var header = document.querySelector(".header");
     if (header && header.parentNode) {
       header.parentNode.insertBefore(bar, header.nextSibling);
