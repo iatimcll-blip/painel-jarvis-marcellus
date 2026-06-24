@@ -229,7 +229,7 @@ footer{text-align:center;padding:20px;color:var(--text-faint);font-size:11px;bor
     <h1>Painel Jarvis - Marcellus</h1>
     <p>MCLL · Monitoramento B2B</p>
     <div class="field"><label>Usuário</label><input id="lg-user" autocomplete="username" placeholder="usuário"></div>
-    <div class="field"><label>Senha</label><input id="lg-pass" type="password" autocomplete="current-password" placeholder="�¢�¢�¢�¢�¢�¢�¢�¢"></div>
+    <div class="field"><label>Senha</label><input id="lg-pass" type="password" autocomplete="current-password" placeholder="********"></div>
     <button class="btn-primary" onclick="App.login()">Entrar</button>
     <div class="login-err" id="lg-err"></div>
   </div>
@@ -254,7 +254,7 @@ footer{text-align:center;padding:20px;color:var(--text-faint);font-size:11px;bor
       <span><i style="background:var(--warn)"></i>Atenção</span>
       <span><i style="background:var(--crit)"></i>Crítico</span>
     </div>
-    <button class="theme-toggle" id="themeBtn" onclick="App.toggleTheme()" title="Alternar tema">�</button>
+    <button class="theme-toggle" id="themeBtn" onclick="App.toggleTheme()" title="Alternar tema">Lua</button>
   </div>
   <nav class="tabs" id="tabs">
     <button class="active" data-tab="abertos">B2B Abertos</button>
@@ -275,11 +275,11 @@ footer{text-align:center;padding:20px;color:var(--text-faint);font-size:11px;bor
     <div class="pane-head">
       <h2>B2B Abertos</h2><span class="sub">SLA prazo · faixas de aging · clusters geográficos</span>
       <div class="hspace" style="flex:1"></div>
-      <button class="btn accent" onclick="document.getElementById('up-abertos').click()">� Importar base Abertos</button>
+      <button class="btn accent" onclick="document.getElementById('up-abertos').click()">Importar base Abertos</button>
       <input type="file" id="up-abertos" accept=".xlsx,.xls" hidden>
       <button class="btn ghost" onclick="App.clear('abertos')">Limpar</button>
     </div>
-    <div id="abertos-empty" class="empty"><div class="ic">�</div>Importe a base de chamados abertos (.xlsx) para começar.</div>
+    <div id="abertos-empty" class="empty">Importe a base de chamados abertos (.xlsx) para começar.</div>
     <div id="abertos-content" style="display:none">
       <div class="kpi-band" id="ab-kpis"></div>
       <div class="toolbar" id="ab-filters"></div>
@@ -290,7 +290,7 @@ footer{text-align:center;padding:20px;color:var(--text-faint);font-size:11px;bor
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <h3 style="margin:0">Chamados abertos</h3>
-          <button class="btn" onclick="App.copyPNG('ab-table-wrap')">�¼ Copiar tabela (PNG)</button>
+          <button class="btn" onclick="App.copyPNG('ab-table-wrap')">Copiar tabela (PNG)</button>
         </div>
         <div class="tbl-wrap" id="ab-table-wrap"><table id="ab-table"></table></div>
       </div>
@@ -303,18 +303,18 @@ footer{text-align:center;padding:20px;color:var(--text-faint);font-size:11px;bor
       <h2>B2B Encerrados</h2><span class="sub">dentro de 8h · outlier +24h · TME por cluster e semana</span>
       <div class="hspace" style="flex:1"></div>
       <select id="en-week" class="input"><option value="">Todas as semanas</option></select>
-      <button class="btn accent" onclick="document.getElementById('up-encerrados').click()">� Importar base Encerrados</button>
+      <button class="btn accent" onclick="document.getElementById('up-encerrados').click()">Importar base Encerrados</button>
       <input type="file" id="up-encerrados" accept=".xlsx,.xls" hidden>
       <button class="btn ghost" onclick="App.clear('encerrados')">Limpar</button>
     </div>
-    <div id="encerrados-empty" class="empty"><div class="ic">�</div>Importe a base BI de chamados encerrados (.xlsx).</div>
+    <div id="encerrados-empty" class="empty">Importe a base BI de chamados encerrados (.xlsx).</div>
     <div id="encerrados-content" style="display:none">
       <div class="kpi-band" id="en-kpis"></div>
       <div class="grid g-2" style="margin-bottom:14px">
-        <div class="card"><h3>Performance �¤8h por cluster</h3><div class="chart-box"><canvas id="ch-en-cluster"></canvas></div></div>
+        <div class="card"><h3>Performance <=8h por cluster</h3><div class="chart-box"><canvas id="ch-en-cluster"></canvas></div></div>
         <div class="card"><h3>Tipo de encerramento</h3><div class="chart-box"><canvas id="ch-en-tipo"></canvas></div></div>
       </div>
-      <div class="card span2" style="margin-bottom:14px"><h3>Evolução semanal � % dentro de 8h</h3><div class="chart-box"><canvas id="ch-en-semana"></canvas></div></div>
+      <div class="card span2" style="margin-bottom:14px"><h3>Evolução semanal - % dentro de 8h</h3><div class="chart-box"><canvas id="ch-en-semana"></canvas></div></div>
       <div class="grid g-auto" id="en-cluster-cards"></div>
     </div>
   </section>
@@ -324,11 +324,11 @@ footer{text-align:center;padding:20px;color:var(--text-faint);font-size:11px;bor
     <div class="pane-head">
       <h2>B2B Repetidos</h2><span class="sub">reincidência por cliente · protocolo · cluster</span>
       <div class="hspace" style="flex:1"></div>
-      <button class="btn accent" onclick="document.getElementById('up-repetidos').click()">� Importar base Repetidos</button>
+      <button class="btn accent" onclick="document.getElementById('up-repetidos').click()">Importar base Repetidos</button>
       <input type="file" id="up-repetidos" accept=".xlsx,.xls" hidden>
       <button class="btn ghost" onclick="App.clear('repetidos')">Limpar</button>
     </div>
-    <div id="repetidos-empty" class="empty"><div class="ic">�</div>Importe a base de chamados repetidos (.xlsx).</div>
+    <div id="repetidos-empty" class="empty">Importe a base de chamados repetidos (.xlsx).</div>
     <div id="repetidos-content" style="display:none">
       <div class="kpi-band" id="rp-kpis"></div>
       <div class="card"><h3>Top reincidências</h3><div class="tbl-wrap" id="rp-table-wrap"><table id="rp-table"></table></div></div>
@@ -339,13 +339,13 @@ footer{text-align:center;padding:20px;color:var(--text-faint);font-size:11px;bor
   <section class="tabpane" data-pane="rede">
     <div class="pane-head"><h2>Painel Rede</h2><span class="sub">NOC · SLA prazo · outlier +24h · TME · backbone × acesso</span></div>
     <div class="kpi-band" id="rede-kpis">
-      <div class="kpi ok"><div class="k-label">SLA prazo</div><div class="k-val">88,9%</div><div class="k-target">meta �¥ 88,9%</div></div>
-      <div class="kpi warn"><div class="k-label">Outlier +24h</div><div class="k-val">4,9%</div><div class="k-target">limite �¤ 4,9%</div></div>
-      <div class="kpi ok"><div class="k-label">TME</div><div class="k-val">5,8h</div><div class="k-target">meta �¤ 6,0h</div></div>
+      <div class="kpi ok"><div class="k-label">SLA prazo</div><div class="k-val">88,9%</div><div class="k-target">meta >= 88,9%</div></div>
+      <div class="kpi warn"><div class="k-label">Outlier +24h</div><div class="k-val">4,9%</div><div class="k-target">limite <= 4,9%</div></div>
+      <div class="kpi ok"><div class="k-label">TME</div><div class="k-val">5,8h</div><div class="k-target">meta <= 6,0h</div></div>
       <div class="kpi crit"><div class="k-label">OS críticas</div><div class="k-val">12</div><div class="k-target">+24h em aberto</div></div>
     </div>
     <div class="grid g-2" style="margin-bottom:14px">
-      <div class="card"><h3>Evolução diária � SLA prazo</h3><div class="chart-box"><canvas id="ch-rede-dia"></canvas></div></div>
+      <div class="card"><h3>Evolução diária - SLA prazo</h3><div class="chart-box"><canvas id="ch-rede-dia"></canvas></div></div>
       <div class="card"><h3>Backbone × Acesso</h3><div class="chart-box"><canvas id="ch-rede-tipo"></canvas></div></div>
     </div>
     <div class="card"><h3>Performance por cluster</h3><div class="tbl-wrap"><table id="rede-table"></table></div></div>
@@ -366,9 +366,9 @@ footer{text-align:center;padding:20px;color:var(--text-faint);font-size:11px;bor
         <div class="card" style="border-top:3px solid var(--warn)"><h3>Rateio Sugerido</h3><div class="metric mono" id="cb-rateio">R$ 0,00</div><div class="metric-label">por veículo</div></div>
       </div>
       <div class="toolbar">
-        <button class="btn" onclick="App.openModal('mAporte')">� Aporte</button>
-        <button class="btn" onclick="App.openModal('mRetirada')">� Retirada</button>
-        <span class="sub mono">Saldo Geral = Σ Aportes � Σ Retiradas: <b id="cb-geral">R$ 0,00</b></span>
+        <button class="btn" onclick="App.openModal('mAporte')">Aporte</button>
+        <button class="btn" onclick="App.openModal('mRetirada')">Retirada</button>
+        <span class="sub mono">Saldo Geral = Aportes - Retiradas: <b id="cb-geral">R$ 0,00</b></span>
       </div>
       <div class="card"><h3>Rateio por condutor / superior</h3><div class="tbl-wrap"><table id="cb-rateio-table"></table></div></div>
     </div>
@@ -377,12 +377,12 @@ footer{text-align:center;padding:20px;color:var(--text-faint);font-size:11px;bor
       <div class="pane-head" style="margin-bottom:12px">
         <span class="sub">Balizado pela frota cadastrada (dFuelVehicles) · só transações Aprovadas</span>
         <div class="hspace" style="flex:1"></div>
-        <button class="btn accent" onclick="document.getElementById('up-transacoes').click()">� Upload base abastecimento Alelo</button>
+        <button class="btn accent" onclick="document.getElementById('up-transacoes').click()">Upload base abastecimento Alelo</button>
         <input type="file" id="up-transacoes" accept=".xlsx,.xls" hidden>
-        <button class="btn" onclick="App.copyPNG('tr-block')">�¼ PNG</button>
-        <button class="btn" onclick="ATRIX_CONSUMO.exportExcel()">� Excel</button>
+        <button class="btn" onclick="App.copyPNG('tr-block')">PNG</button>
+        <button class="btn" onclick="ATRIX_CONSUMO.exportExcel()">Excel</button>
       </div>
-      <div id="tr-empty" class="empty"><div class="ic">�½</div>Suba a base de abastecimento Alelo. O motor recalcula automaticamente.</div>
+      <div id="tr-empty" class="empty">Suba a base de abastecimento Alelo. O motor recalcula automaticamente.</div>
       <div id="tr-block" style="display:none">
         <div class="kpi-band" id="tr-kpis"></div>
         <div class="grid g-2" style="margin-bottom:14px">
@@ -399,10 +399,10 @@ footer{text-align:center;padding:20px;color:var(--text-faint);font-size:11px;bor
     <div class="pane-head">
       <h2>Produtividade OFS</h2><span class="sub">técnicos de campo · OS executadas · taxa de conclusão</span>
       <div class="hspace" style="flex:1"></div>
-      <button class="btn accent" onclick="document.getElementById('up-ofs').click()">� Importar base OFS</button>
+      <button class="btn accent" onclick="document.getElementById('up-ofs').click()">Importar base OFS</button>
       <input type="file" id="up-ofs" accept=".xlsx,.xls" hidden>
     </div>
-    <div id="ofs-empty" class="empty"><div class="ic">�</div>Importe a base de produtividade OFS (.xlsx).</div>
+    <div id="ofs-empty" class="empty">Importe a base de produtividade OFS (.xlsx).</div>
     <div id="ofs-content" style="display:none">
       <div class="kpi-band" id="ofs-kpis"></div>
       <div class="card span2" style="margin-bottom:14px"><h3>Ranking de técnicos</h3><div class="chart-box tall"><canvas id="ch-ofs"></canvas></div></div>
@@ -419,9 +419,9 @@ footer{text-align:center;padding:20px;color:var(--text-faint);font-size:11px;bor
       <div class="kpi"><div class="k-label">Encerrados</div><div class="k-val" id="wa-enc">0</div><div class="k-target">no período</div></div>
     </div>
     <div class="card">
-      <h3>Monitoramento WhatsApp � MCLL</h3>
+      <h3>Monitoramento WhatsApp - MCLL</h3>
       <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Sistema de cobrança de report a cada 120 min via Evolution API (Railway), integrado à base Abertos. Use chip dedicado.</p>
-      <a class="btn accent" id="wa-link" href="about:blank" target="_blank">� Abrir monitor (Railway)</a>
+      <a class="btn accent" id="wa-link" href="about:blank" target="_blank">Abrir monitor (Railway)</a>
       <button class="btn" onclick="App.openModal('mWaUrl')" style="margin-left:8px">Configurar URL</button>
     </div>
   </section>
@@ -439,7 +439,7 @@ footer{text-align:center;padding:20px;color:var(--text-faint);font-size:11px;bor
         <label><input type="checkbox" checked value="combustiveis"> Combustíveis</label>
         <label><input type="checkbox" checked value="ofs"> Produtividade OFS</label>
       </div>
-      <button class="btn accent" onclick="App.genReport()">� Gerar relatório</button>
+      <button class="btn accent" onclick="App.genReport()">Gerar relatório</button>
       <p class="sub" style="margin-top:10px">Exporta um resumo HTML imprimível (PDF via Ctrl+P). Versão executiva PDF/PPTX é gerada server-side com ReportLab.</p>
     </div>
   </section>
@@ -509,7 +509,7 @@ footer{text-align:center;padding:20px;color:var(--text-faint);font-size:11px;bor
 
 <script>
 /* ============================================================
-   MOTOR � Painel Jarvis - Marcellus
+   MOTOR - Painel Jarvis - Marcellus
    ============================================================ */
 
 /* ---------- Utilidades ---------- */
@@ -523,11 +523,11 @@ function statusClass(v,t,inv){if(v==null)return'neutral';const ok=inv?v<=t:v>=t;
 
 /* ---------- Modelo de domínio: clusters / MOP-EPS / SLA ----------
    Mapa autoritativo de Cobertura por Região (referência MCLL do painel):
-   MA CAP = São Luís · Paço do Lumiar · São José de Ribamar        � EPS-SLN MA
-   MA INT = demais cidades do MA                                    � MOP GIGA+ MA
-   PI CAP = Teresina | PI INT = demais do PI                        � MOP GIGA+ PI
-   PA CAP = Belém · Ananindeua | PA INT = demais do PA              � EPS-SLN PA
-   AP/AM  = todas de AP e AM + Santarém-PA + Almeirim-PA            � EPS-ADX
+   MA CAP = São Luís · Paço do Lumiar · São José de Ribamar        -> EPS-SLN MA
+   MA INT = demais cidades do MA                                    -> MOP GIGA+ MA
+   PI CAP = Teresina | PI INT = demais do PI                        -> MOP GIGA+ PI
+   PA CAP = Belém · Ananindeua | PA INT = demais do PA              -> EPS-SLN PA
+   AP/AM  = todas de AP e AM + Santarém-PA + Almeirim-PA            -> EPS-ADX
 */
 function normaliza(s){return (s||'').toString().replace(/\u00a0/g,' ').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
 const CID_MA_CAP=['SAO LUIS','PACO DO LUMIAR','SAO JOSE DE RIBAMAR'];
@@ -539,17 +539,17 @@ function clusterDe(uf,cidade){
   if(uf==='MA')return CID_MA_CAP.includes(c)?'MA CAP':'MA INT';
   if(uf==='PI')return c==='TERESINA'?'PI CAP':'PI INT';
   if(uf==='PA'){ if(CID_ADX_PA.includes(c))return'AM/AP'; return CID_PA_CAP.includes(c)?'PA CAP':'PA INT'; }
-  return uf||'�';
+  return uf||'-';
 }
 function mopEps(cluster){
   const map={'MA CAP':'EPS-SLN MA','MA INT':'MOP GIGA+ MA','PI CAP':'MOP GIGA+ PI','PI INT':'MOP GIGA+ PI',
              'PA CAP':'EPS-SLN PA','PA INT':'EPS-SLN PA','AM/AP':'EPS-ADX'};
-  return map[cluster]||'�';
+  return map[cluster]||'-';
 }
 // agrupamento do Painel Rede: NORTE = PA + AM/AP ; PI = PI CAP + PI INT
 function clusterRede(cl){ if(cl==='PA CAP'||cl==='PA INT'||cl==='AM/AP')return'NORTE'; if(cl==='PI CAP'||cl==='PI INT')return'PI'; return cl; }
 
-/* SLA comercial: Seg�Sex 08:00�18:00 (10h úteis/dia), exclui fim de semana.
+/* SLA comercial: Seg-Sex 08:00-18:00 (10h úteis/dia), exclui fim de semana.
    Replica a regra NETWORKDAYS.INTL usada desde a origem do projeto em Excel. */
 function slaComercial(inicio, fim){
   if(!inicio)return null; const ini=new Date(inicio), end=fim?new Date(fim):new Date();
@@ -569,14 +569,14 @@ function slaComercial(inicio, fim){
 }
 // faixas de aging para Abertos (regra das 8h sobre SLA comercial)
 function faixaSLA(horas){
-  if(horas==null)return{label:'�',cls:'neutral'};
+  if(horas==null)return{label:'-',cls:'neutral'};
   if(horas<4)  return{label:'Até 4h',cls:'ok'};
   if(horas<8)  return{label:'4h a 8h',cls:'ok'};
   if(horas<12) return{label:'8h a 12h',cls:'warn'};
   if(horas<=24)return{label:'12h a 24h',cls:'warn'};
   return{label:'Maior que 24h',cls:'crit'};
 }
-// metas (Painel Rede do site): �¥85% prazo · �¤4,9% outlier +24h · TME �¤6,0h
+// metas (Painel Rede do site): >=85% prazo · <=4,9% outlier +24h · TME <=6,0h
 const METAS={ sla8h:85, prazo:85, outlier24h:4.9, tme:6.0 };
 
 /* ---------- IndexedDB ---------- */
@@ -623,9 +623,9 @@ const App={
   /* ---- tema ---- */
   toggleTheme(){const cur=document.documentElement.getAttribute('data-theme');const next=cur==='dark'?'light':'dark';
     document.documentElement.setAttribute('data-theme',next);localStorage.setItem('atrix-theme',next);
-    $('#themeBtn').textContent=next==='dark'?'�':'��';this.repaintCharts();},
+    $('#themeBtn').textContent=next==='dark'?'Lua':'Sol';this.repaintCharts();},
   initTheme(){const saved=localStorage.getItem('atrix-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
-    document.documentElement.setAttribute('data-theme',saved);$('#themeBtn').textContent=saved==='dark'?'�':'��';},
+    document.documentElement.setAttribute('data-theme',saved);$('#themeBtn').textContent=saved==='dark'?'Lua':'Sol';},
   repaintCharts(){setTimeout(()=>{this.renderAbertos();this.renderEncerrados();this.renderRede();this.renderOFS();ATRIX_CONSUMO.render();},60);},
 
   /* ---- navegação ---- */
@@ -688,8 +688,8 @@ const App={
     const pctOut=total?out24/total*100:0;
     $('#ab-kpis').innerHTML=`
       ${kpi('Chamados abertos',total,'',  'neutral')}
-      ${kpi('Dentro de 8h',PCT(pctOk),'meta �¥ '+METAS.sla8h+'%',statusClass(pctOk,METAS.sla8h))}
-      ${kpi('Outlier +24h',PCT(pctOut),'limite �¤ '+METAS.outlier24h+'%',statusClass(pctOut,METAS.outlier24h,true))}
+      ${kpi('Dentro de 8h',PCT(pctOk),'meta >= '+METAS.sla8h+'%',statusClass(pctOk,METAS.sla8h))}
+      ${kpi('Outlier +24h',PCT(pctOut),'limite <= '+METAS.outlier24h+'%',statusClass(pctOut,METAS.outlier24h,true))}
       ${kpi('Críticos +24h',out24,'em aberto',out24>0?'crit':'ok')}`;
     // filtros (chips de cluster)
     const clusters=[...new Set(ST.abertos.map(r=>r.cluster))].sort();
@@ -706,20 +706,20 @@ const App={
     $('#ab-table').innerHTML=thead(['Protocolo','Cliente','UF','Cidade','Cluster','MOP/EPS','Aging','Faixa SLA','Substatus'])+
       '<tbody>'+d.slice(0,400).map(r=>`<tr>
         <td class="mono">${r.id}</td><td class="ellip">${r.cliente}</td><td>${r.uf}</td><td class="ellip">${r.cidade}</td>
-        <td>${r.cluster}</td><td>${r.mop}</td><td class="mono">${r.horas!=null?r.horas.toFixed(1)+'h':'�'}</td>
+        <td>${r.cluster}</td><td>${r.mop}</td><td class="mono">${r.horas!=null?r.horas.toFixed(1)+'h':'-'}</td>
         <td><span class="pill ${r.faixaCls}">${r.faixa}</span></td><td class="ellip">${r.substatus}</td></tr>`).join('')+'</tbody>';
   },
   setFilter(v,kind){if(kind==='cluster')ST.filtroCluster=v;else ST.filtroFaixa=v;this.renderAbertos();},
 
   /* ================= ENCERRADOS ================= */
-  // Classificação SLA pelas metas: Prazo �¤8h · Fora 8h01�24h · Outlier >24h (sobre tempo_ccs / col AG)
+  // Classificação SLA pelas metas: Prazo <=8h · Fora 8h01-24h · Outlier >24h (sobre tempo_ccs / col AG)
   async importEncerrados(file){
     const rows=await readXLSX(file,'');
     ST.encerrados=rows.map(r=>{
       const cl=col(r,'cluster','cluster_calc','nova_regional');
       const uf=col(r,'ufservico','UF'); const cid=col(r,'cidadeservico','Cidade','cidade');
-      const sla=parseFloat(col(r,'tempo_ccs'))||0;           // col AG � SLA em horas
-      const agingTxt=col(r,'aging_ccs','aging');             // col AA � faixa em texto
+      const sla=parseFloat(col(r,'tempo_ccs'))||0;           // col AG - SLA em horas
+      const agingTxt=col(r,'aging_ccs','aging');             // col AA - faixa em texto
       const dentro8h = sla<=8;
       const foraPrazo = sla>8 && sla<=24;
       const outlier24h = sla>24;
@@ -761,20 +761,20 @@ const App={
     const tme=total?d.reduce((s,r)=>s+(r.aging||0),0)/total:0;
     $('#en-kpis').innerHTML=`
       ${kpi('Encerrados',total,'',  'neutral')}
-      ${kpi('Dentro do Prazo',PCT(pPrazo),'�¤ 8h · meta �¥ '+METAS.prazo+'%',statusClass(pPrazo,METAS.prazo))}
+      ${kpi('Dentro do Prazo',PCT(pPrazo),'<= 8h · meta >= '+METAS.prazo+'%',statusClass(pPrazo,METAS.prazo))}
       ${kpi('Fora do Prazo',PCT(pFora),'8h01 a 24h',pFora>15?'warn':'ok')}
-      ${kpi('Outlier +24h',PCT(pOut),'limite �¤ '+METAS.outlier24h+'%',statusClass(pOut,METAS.outlier24h,true))}
-      ${kpi('TME',tme.toFixed(1)+'h','meta �¤ '+METAS.tme+'h',statusClass(tme,METAS.tme,true))}`;
+      ${kpi('Outlier +24h',PCT(pOut),'limite <= '+METAS.outlier24h+'%',statusClass(pOut,METAS.outlier24h,true))}
+      ${kpi('TME',tme.toFixed(1)+'h','meta <= '+METAS.tme+'h',statusClass(tme,METAS.tme,true))}`;
     // performance por cluster (% dentro do prazo)
     const cls={};d.forEach(r=>{(cls[r.cluster]=cls[r.cluster]||{t:0,ok:0,out:0}).t++;if(r.dentro8h)cls[r.cluster].ok++;if(r.outlier24h)cls[r.cluster].out++;});
     const clNames=Object.keys(cls).sort();
     chart('ch-en-cluster',{type:'bar',data:{labels:clNames,datasets:[{data:clNames.map(c=>cls[c].ok/cls[c].t*100),
       backgroundColor:clNames.map(c=>{const p=cls[c].ok/cls[c].t*100;return p>=METAS.prazo?cssv('--ok'):p>=METAS.prazo*.92?cssv('--warn'):cssv('--crit');}),borderRadius:5}]},options:baseOpt(true,'%')});
     // tipo de encerramento (causa)
-    const tipos={};d.forEach(r=>tipos[r.tipo||'�']=(tipos[r.tipo||'�']||0)+1);
+    const tipos={};d.forEach(r=>tipos[r.tipo||'-']=(tipos[r.tipo||'-']||0)+1);
     const tipoSorted=Object.entries(tipos).sort((a,b)=>b[1]-a[1]);
     chart('ch-en-tipo',{type:'doughnut',data:{labels:tipoSorted.map(x=>x[0]),datasets:[{data:tipoSorted.map(x=>x[1]),backgroundColor:[cssv('--accent'),cssv('--ok'),cssv('--warn'),cssv('--crit'),cssv('--neutral'),'#7C5CFC','#19B6C9','#E0A93B'],borderWidth:0}]},options:donutOpt()});
-    // evolução semanal � % dentro do prazo
+    // evolução semanal - % dentro do prazo
     const sems=[...new Set(ST.encerrados.map(r=>r.semana).filter(Boolean))].sort((a,b)=>(parseInt(String(a).replace(/\D/g,''))||0)-(parseInt(String(b).replace(/\D/g,''))||0));
     const semOk=sems.map(s=>{const g=ST.encerrados.filter(r=>String(r.semana)===String(s));return g.length?g.filter(r=>r.dentro8h).length/g.length*100:0;});
     chart('ch-en-semana',{type:'line',data:{labels:sems,datasets:[{label:'% prazo',data:semOk,borderColor:cssv('--accent'),backgroundColor:'transparent',tension:.3,pointRadius:2,fill:false},
@@ -785,13 +785,13 @@ const App={
     // tabela operacional com as colunas solicitadas
     if(!$('#en-table')){
       const wrap=document.createElement('div');wrap.className='card';wrap.style.marginTop='14px';
-      wrap.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h3 style="margin:0">Chamados encerrados</h3><button class="btn" onclick="App.copyPNG(\'en-table-wrap\')">�¼ Copiar tabela (PNG)</button></div><div class="tbl-wrap" id="en-table-wrap"><table id="en-table"></table></div>';
+      wrap.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h3 style="margin:0">Chamados encerrados</h3><button class="btn" onclick="App.copyPNG(\'en-table-wrap\')">Copiar tabela (PNG)</button></div><div class="tbl-wrap" id="en-table-wrap"><table id="en-table"></table></div>';
       $('[data-pane="encerrados"]').appendChild(wrap);
     }
     $('#en-table').innerHTML=thead(['Protocolo','Título','Tipo Encerramento','UF','Cidade','Aging','SLA (h)','Classificação','Semana'])+
       '<tbody>'+d.slice(0,500).map(r=>{const cls=r.dentro8h?'ok':r.outlier24h?'crit':'warn';const lbl=r.dentro8h?'No prazo':r.outlier24h?'Outlier':'Fora prazo';
         return `<tr><td class="mono">${r.id}</td><td class="ellip">${r.titulo||''}</td><td class="ellip">${r.tipo||''}</td>
-        <td>${r.uf||''}</td><td class="ellip">${r.cidade||''}</td><td><span class="pill ${faixaTxtCls(r.agingTxt)}">${r.agingTxt||'�'}</span></td>
+        <td>${r.uf||''}</td><td class="ellip">${r.cidade||''}</td><td><span class="pill ${faixaTxtCls(r.agingTxt)}">${r.agingTxt||'-'}</span></td>
         <td class="mono">${r.aging.toFixed(1)}</td><td><span class="pill ${cls}">${lbl}</span></td><td>${r.semana||''}</td></tr>`;}).join('')+'</tbody>';
   },
 
@@ -843,9 +843,9 @@ const App={
       '<tbody>'+ST.repetidos.sort((a,b)=>b.reincCliente-a.reincCliente).slice(0,500).map(r=>{
         const cls=r.dentro8h?'ok':r.outlier24h?'crit':'warn';
         return `<tr><td class="mono">${r.id}</td><td class="ellip">${r.cliente||''}</td><td class="ellip">${r.uf||''}/${r.cidade||''}</td>
-        <td>${r.cluster||''}</td><td class="mono">${(r.aging||0).toFixed(1)}</td><td><span class="pill ${faixaTxtCls(r.agingTxt)}">${r.agingTxt||'�'}</span></td>
+        <td>${r.cluster||''}</td><td class="mono">${(r.aging||0).toFixed(1)}</td><td><span class="pill ${faixaTxtCls(r.agingTxt)}">${r.agingTxt||'-'}</span></td>
         <td><span class="pill ${r.reincCliente>=10?'crit':'warn'}">${r.reincCliente}×</span></td>
-        <td>${r.reincPlano>1?'<span class="pill warn">'+r.reincPlano+'×</span>':'�'}</td>
+        <td>${r.reincPlano>1?'<span class="pill warn">'+r.reincPlano+'×</span>':'-'}</td>
         <td class="ellip">${r.causaRaiz||''}</td><td>${r.semana||''}</td></tr>`;}).join('')+'</tbody>';
   },
 
@@ -863,9 +863,9 @@ const App={
       const pPrazo=total?ok/total*100:0, pOut=total?out/total*100:0, tme=total?d.reduce((s,r)=>s+(r.aging||0),0)/total:0;
       const crit=d.filter(r=>r.outlier24h).length;
       $('#rede-kpis').innerHTML=`
-        <div class="kpi ${statusClass(pPrazo,METAS.prazo)}"><div class="k-label">SLA prazo</div><div class="k-val">${PCT(pPrazo)}</div><div class="k-target">meta �¥ ${METAS.prazo}%</div></div>
-        <div class="kpi ${statusClass(pOut,METAS.outlier24h,true)}"><div class="k-label">Outlier +24h</div><div class="k-val">${PCT(pOut)}</div><div class="k-target">limite �¤ ${METAS.outlier24h}%</div></div>
-        <div class="kpi ${statusClass(tme,METAS.tme,true)}"><div class="k-label">TME</div><div class="k-val">${tme.toFixed(1)}h</div><div class="k-target">meta �¤ ${METAS.tme}h</div></div>
+        <div class="kpi ${statusClass(pPrazo,METAS.prazo)}"><div class="k-label">SLA prazo</div><div class="k-val">${PCT(pPrazo)}</div><div class="k-target">meta >= ${METAS.prazo}%</div></div>
+        <div class="kpi ${statusClass(pOut,METAS.outlier24h,true)}"><div class="k-label">Outlier +24h</div><div class="k-val">${PCT(pOut)}</div><div class="k-target">limite <= ${METAS.outlier24h}%</div></div>
+        <div class="kpi ${statusClass(tme,METAS.tme,true)}"><div class="k-label">TME</div><div class="k-val">${tme.toFixed(1)}h</div><div class="k-target">meta <= ${METAS.tme}h</div></div>
         <div class="kpi ${crit>0?'crit':'ok'}"><div class="k-label">OS críticas</div><div class="k-val">${crit}</div><div class="k-target">outlier +24h</div></div>`;
       tbl.innerHTML=thead(['Cluster','OS','Prazo','Outlier +24h','TME','Tendência'])+
       '<tbody>'+names.map(c=>{const o=cls[c];const p=o.ok/o.t*100;const po=o.out/o.t*100;const tme=o.sumA/o.t;
@@ -876,7 +876,7 @@ const App={
           <td>${sparkline([p*.9,p*.95,p*1.02,p*.98,p])}</td></tr>`;}).join('')+'</tbody>';
       const sems=[...new Set(d.map(r=>r.semana).filter(Boolean))].sort((a,b)=>(parseInt(String(a).replace(/\D/g,''))||0)-(parseInt(String(b).replace(/\D/g,''))||0));
       const semOk=sems.map(s=>{const g=d.filter(r=>String(r.semana)===String(s));return g.length?g.filter(r=>r.dentro8h).length/g.length*100:0;});
-      chart('ch-rede-dia',{type:'line',data:{labels:sems.length?sems:['�'],datasets:[{data:semOk.length?semOk:[0],borderColor:cssv('--accent'),tension:.3,pointRadius:2,fill:false},
+      chart('ch-rede-dia',{type:'line',data:{labels:sems.length?sems:['-'],datasets:[{data:semOk.length?semOk:[0],borderColor:cssv('--accent'),tension:.3,pointRadius:2,fill:false},
         {data:sems.map(()=>METAS.prazo),borderColor:cssv('--warn'),borderDash:[5,5],pointRadius:0}]},options:baseOpt(false,'%')});
       // composição por tipo (causa) como proxy backbone×acesso
       const fibra=d.filter(r=>/fibra|rompiment/i.test(r.tipo||r.causaRaiz||'')).length;
@@ -889,7 +889,7 @@ const App={
   /* ================= OFS ================= */
   async importOFS(file){
     const rows=await readXLSX(file);
-    const map={};rows.forEach(r=>{const t=col(r,'tecnico','Tecnico','tecnico_campo','nome')||'�';
+    const map={};rows.forEach(r=>{const t=col(r,'tecnico','Tecnico','tecnico_campo','nome')||'-';
       (map[t]=map[t]||{tec:t,total:0,concl:0,cluster:col(r,'cluster','Cluster')});
       map[t].total++;const st=normaliza(col(r,'status','Status','situacao'));if(st.includes('CONCL')||st.includes('EXEC')||st.includes('FINAL'))map[t].concl++;});
     ST.ofs=Object.values(map).sort((a,b)=>b.concl-a.concl);
@@ -908,7 +908,7 @@ const App={
       {label:'Total',data:ST.ofs.map(r=>r.total),backgroundColor:cssv('--neutral-bg'),borderRadius:4}]},options:{...baseOpt(false),indexAxis:'y',plugins:{legend:{display:true,labels:{color:txtColor()}}}}});
     $('#ofs-table').innerHTML=thead(['Técnico','Cluster','OS totais','Concluídas','Taxa'])+
       '<tbody>'+ST.ofs.map(r=>{const t=r.total?r.concl/r.total*100:0;
-        return `<tr><td>${r.tec}</td><td>${r.cluster||'�'}</td><td class="mono">${r.total}</td><td class="mono">${r.concl}</td>
+        return `<tr><td>${r.tec}</td><td>${r.cluster||'-'}</td><td class="mono">${r.total}</td><td class="mono">${r.concl}</td>
         <td><span class="pill ${statusClass(t,80)}">${PCT(t)}</span></td></tr>`;}).join('')+'</tbody>';
   },
 
@@ -923,7 +923,7 @@ const App={
     $('#cb-veic').textContent=veic;
     $('#cb-rateio').textContent=BRL(veic?geral/veic:0);
     // tabela rateio por superior
-    const sup={};ST.frota.forEach(v=>{(sup[v.superior||'�']=sup[v.superior||'�']||{n:0}).n++;});
+    const sup={};ST.frota.forEach(v=>{(sup[v.superior||'-']=sup[v.superior||'-']||{n:0}).n++;});
     const rate=veic?geral/veic:0;
     $('#cb-rateio-table').innerHTML=thead(['Superior','Veículos','Rateio sugerido'])+
       '<tbody>'+Object.entries(sup).map(([s,o])=>`<tr><td>${s}</td><td class="mono">${o.n}</td><td class="mono">${BRL(o.n*rate)}</td></tr>`).join('')+'</tbody>';
@@ -946,7 +946,7 @@ const App={
     DB.set('abertos','data',ST.abertos);this.closeModal();this.afterData('abertos');toast('Chamado adicionado');},
 
   /* ---- usuários ---- */
-  async renderUsers(){const users=await DB.get('config','users')||[{u:'mcll',p:'�¢�¢�¢�¢'},{u:'marcellus',p:'�¢�¢�¢�¢'}];
+  async renderUsers(){const users=await DB.get('config','users')||[{u:'mcll',p:'****'},{u:'marcellus',p:'****'}];
     $('#users-list').innerHTML='<table>'+thead(['Usuário','Ação'])+'<tbody>'+users.map((x,i)=>`<tr><td>${x.u}</td><td><button class="btn ghost" onclick="App.delUser(${i})">remover</button></td></tr>`).join('')+'</tbody></table>';},
   async addUser(){const users=await DB.get('config','users')||[];users.push({u:$('#us-u').value,p:$('#us-p').value});
     await DB.set('config','users',users);this.renderUsers();toast('Usuário criado');},
@@ -957,21 +957,22 @@ const App={
   async saveBackupCfg(){await DB.set('config','backup',{url:$('#bk-url').value,auto:$('#bk-auto').checked});this.closeModal();toast('Configuração de backup salva');},
   async backupNow(){const cfg=await DB.get('config','backup');if(!cfg?.url){toast('Configure a URL do Apps Script');return;}
     try{await fetch(cfg.url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({abertos:ST.abertos})});toast('Snapshot enviado ao Sheets');}
-    catch(e){toast('Falha no envio � verifique a URL');}},
+    catch(e){toast('Falha no envio - verifique a URL');}},
   async saveWaUrl(){const u=$('#wa-url-in').value.trim();await DB.set('config','wa',u);$('#wa-link').href=u||'about:blank';this.closeModal();toast('URL do monitor salva');},
 
   /* ---- report ---- */
   genReport(){const sel=$$('#rep-checks input:checked').map(c=>c.value);
     const w=window.open('','_blank');
+    if(!w){toast('Pop-up bloqueado. Permita pop-ups para gerar o relatório.');return;}
     let html=`<html><head><title>Relatório Jarvis</title><style>body{font-family:Inter,sans-serif;padding:30px;color:#1A1D23}h1{font-size:20px}h2{font-size:14px;margin-top:22px;border-bottom:1px solid #ddd;padding-bottom:4px}table{border-collapse:collapse;width:100%;font-size:12px;margin-top:8px}td,th{border:1px solid #ddd;padding:5px 8px;text-align:left}</style><link rel="stylesheet" href="./painel-atrix-redesign.css">
 </head><body>`;
-    html+=`<h1>Painel Jarvis - Marcellus � Relatório consolidado</h1><p>${fmtDate(new Date())}</p>`;
+    html+=`<h1>Painel Jarvis - Marcellus - Relatório consolidado</h1><p>${fmtDate(new Date())}</p>`;
     if(sel.includes('abertos'))html+=`<h2>B2B Abertos (${ST.abertos.length})</h2>`+miniTbl(ST.abertos.slice(0,15),['id','cliente','cluster','faixa','substatus']);
     if(sel.includes('encerrados'))html+=`<h2>B2B Encerrados (${ST.encerrados.length})</h2><p>Dentro de 8h: ${PCT(ST.encerrados.length?ST.encerrados.filter(r=>r.dentro8h).length/ST.encerrados.length*100:0)}</p>`;
     if(sel.includes('repetidos'))html+=`<h2>B2B Repetidos (${ST.repetidos.length} clientes)</h2>`+miniTbl(ST.repetidos.slice(0,15),['cliente','uf','qtd']);
     if(sel.includes('ofs'))html+=`<h2>Produtividade OFS</h2>`+miniTbl(ST.ofs.slice(0,15),['tec','total','concl']);
     if(sel.includes('combustiveis'))html+=`<h2>Combustíveis</h2><p>Saldo: ${$('#cb-geral').textContent} · Veículos: ${ST.frota.length}</p>`;
-    html+=`<p style="margin-top:30px;color:#888;font-size:11px">© 2026 MCLL Monitoramento B2B · Wanderson Marcellus Penha Costa</p><script src="./painel-atrix-redesign.js"></script>
+    html+=`<p style="margin-top:30px;color:#888;font-size:11px">© 2026 MCLL Monitoramento B2B · Wanderson Marcellus Penha Costa</p><script src="./painel-atrix-redesign.js"><\/script>
 </body></html>`;
     w.document.write(html);w.document.close();setTimeout(()=>w.print(),400);},
 
@@ -1010,13 +1011,13 @@ const App={
     // render inicial
     this.refreshCounters();this.renderAbertos();this.renderEncerrados();this.renderRepetidos();
     this.renderRede();this.renderOFS();this.renderCombustivel();ATRIX_CONSUMO.render();
-    // acesso livre � sem login
+    // acesso livre - sem login
     $('#login').style.display='none';$('#app').style.display='block';
   }
 };
 
 /* ============================================================
-   MÓDULO ISOLADO � ATRIX_CONSUMO (Transações Alelo)
+   MÓDULO ISOLADO - ATRIX_CONSUMO (Transações Alelo)
    Balizado pela frota cadastrada (ST.frota). Só T = "Aprovada".
    ============================================================ */
 const ATRIX_CONSUMO=(function(){
@@ -1024,13 +1025,13 @@ const ATRIX_CONSUMO=(function(){
     if(!file)return;
     const rows=await readXLSX(file);
     const placasFrota=new Set(ST.frota.map(v=>normaliza(v.placa)));
-    const supDe={};ST.frota.forEach(v=>supDe[normaliza(v.placa)]=v.superior||'�');
+    const supDe={};ST.frota.forEach(v=>supDe[normaliza(v.placa)]=v.superior||'-');
     const aprov=rows.filter(r=>/aprovad/i.test(String(col(r,'T','Transacao','status','situacao'))));
     const consol={};
     aprov.forEach(r=>{const placa=normaliza(col(r,'Placa','placa','AB'));
       if(placasFrota.size&&!placasFrota.has(placa))return; // baliza pela frota
       const val=parseFloat(String(col(r,'Valor','AD','valor','total')).replace(/[^\d,.-]/g,'').replace('.','').replace(',','.'))||0;
-      (consol[placa]=consol[placa]||{placa,sup:supDe[placa]||'�',val:0,n:0});consol[placa].val+=val;consol[placa].n++;});
+      (consol[placa]=consol[placa]||{placa,sup:supDe[placa]||'-',val:0,n:0});consol[placa].val+=val;consol[placa].n++;});
     ST.transacoes=Object.values(consol).sort((a,b)=>b.val-a.val);
     await DB.set('transacoes','data',ST.transacoes);render();toast('Transações recalculadas: '+ST.transacoes.length+' placas');
   }
