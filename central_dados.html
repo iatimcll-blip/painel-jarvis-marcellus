@@ -206,6 +206,7 @@ const MODULES = [
   {
     id: 'b2b_abertos',
     key: 'bd_b2b_abertos',
+    store: 'abertos',
     name: 'B2B Abertos',
     desc: 'Tickets de suporte em aberto',
     panelUrl: 'painel_atrix.html',
@@ -217,6 +218,7 @@ const MODULES = [
   {
     id: 'b2b_encerrados',
     key: 'bd_b2b_enc',
+    store: 'encerrados',
     name: 'B2B Encerrados',
     desc: 'Tickets encerrados · SLA e faixas de atraso',
     panelUrl: 'painel_secundario.html?tab=b2b',
@@ -228,6 +230,7 @@ const MODULES = [
   {
     id: 'rede',
     key: 'bd_rede',
+    store: 'encerrados',
     name: 'Redes',
     desc: 'Backbone e Acesso · Prazo, TME e Outliers',
     panelUrl: 'painel_secundario.html?tab=rede',
@@ -239,6 +242,7 @@ const MODULES = [
   {
     id: 'ofs',
     key: 'bd_ofs',
+    store: 'ofs',
     name: 'OFS · Produtividade',
     desc: 'Ordens de serviço · Campo e técnicos',
     panelUrl: 'painel_secundario.html?tab=ofs',
@@ -250,6 +254,7 @@ const MODULES = [
   {
     id: 'frota',
     key: 'bd_frota',
+    store: 'frota',
     name: 'Frota / Combustíveis',
     desc: 'Consumo, eficiência km/L e balizador por veículo',
     panelUrl: 'painel_frota.html',
@@ -268,6 +273,113 @@ function setRecord(key,data){
   try{localStorage.setItem(key,JSON.stringify(data));}catch(e){showToast('Erro: armazenamento cheio — limpe dados antigos','err');}
 }
 function clearRecord(key){try{localStorage.removeItem(key);}catch(e){}}
+
+/* ============ COMPATIBILIDADE COM O PAINEL ATRIX ============ */
+const DB={_db:null,
+  open(){return new Promise((res,rej)=>{const r=indexedDB.open('atrix_jarvis',1);
+    r.onupgradeneeded=e=>{const d=e.target.result;['abertos','encerrados','repetidos','ofs','transacoes','frota','movimentos','config'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s,{keyPath:'k'});});};
+    r.onsuccess=e=>{this._db=e.target.result;res();}; r.onerror=e=>rej(e);});},
+  set(store,k,v){return new Promise((res,rej)=>{try{const t=this._db.transaction(store,'readwrite');t.objectStore(store).put({k,v});t.oncomplete=()=>res();t.onerror=rej;}catch(e){res();}});},
+  del(store,k){return new Promise(res=>{try{const t=this._db.transaction(store,'readwrite');t.objectStore(store).delete(k);t.oncomplete=()=>res();}catch(e){res();}});}
+};
+
+const CID_MA_CAP=['SAO LUIS','PACO DO LUMIAR','SAO JOSE DE RIBAMAR'];
+const CID_PA_CAP=['BELEM','ANANINDEUA'];
+const CID_ADX_PA=['SANTAREM','ALMEIRIM'];
+
+function normaliza(s){return (s||'').toString().replace(/\u00a0/g,' ').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
+function col(row,...names){const keys=Object.keys(row);for(const n of names){const k=keys.find(k=>normaliza(k)===normaliza(n));if(k)return row[k];}
+  for(const n of names){const k=keys.find(k=>normaliza(k).includes(normaliza(n)));if(k)return row[k];}return'';}
+function asNumber(v){const n=parseFloat(String(v??'').replace(/[^\d,.-]/g,'').replace('.','').replace(',','.'));return Number.isFinite(n)?n:0;}
+function asDate(v){if(v instanceof Date)return v;if(typeof v==='number')return new Date(Math.round((v-25569)*86400*1000));if(v){const d=new Date(v);if(!isNaN(d))return d;}return null;}
+function clusterDe(uf,cidade){
+  uf=normaliza(uf);const c=normaliza(cidade);
+  if(uf==='AM'||uf==='AP')return'AM/AP';
+  if(uf==='MA')return CID_MA_CAP.includes(c)?'MA CAP':'MA INT';
+  if(uf==='PI')return c==='TERESINA'?'PI CAP':'PI INT';
+  if(uf==='PA'){if(CID_ADX_PA.includes(c))return'AM/AP';return CID_PA_CAP.includes(c)?'PA CAP':'PA INT';}
+  return uf||'-';
+}
+function mopEps(cluster){
+  const map={'MA CAP':'EPS-SLN MA','MA INT':'MOP GIGA+ MA','PI CAP':'MOP GIGA+ PI','PI INT':'MOP GIGA+ PI','PA CAP':'EPS-SLN PA','PA INT':'EPS-SLN PA','AM/AP':'EPS-ADX'};
+  return map[cluster]||'-';
+}
+function clusterRede(cl){if(cl==='PA CAP'||cl==='PA INT'||cl==='AM/AP')return'NORTE';if(cl==='PI CAP'||cl==='PI INT')return'PI';return cl;}
+function slaComercial(inicio,fim){
+  if(!inicio)return null;const ini=new Date(inicio),end=fim?new Date(fim):new Date();let mins=0;
+  for(let d=new Date(ini);d<end;d.setDate(d.getDate()+1)){
+    const dow=d.getDay();if(dow===0||dow===6)continue;
+    const s=new Date(d);s.setHours(8,0,0,0);const e=new Date(d);e.setHours(18,0,0,0);
+    const a=new Date(Math.max(s,ini));const b=new Date(Math.min(e,end));
+    if(b>a)mins+=(b-a)/60000;
+  }
+  return mins/60;
+}
+function faixaSLA(horas){
+  if(horas==null)return{label:'-',cls:'neutral'};
+  if(horas<4)return{label:'Até 4h',cls:'ok'};
+  if(horas<8)return{label:'4h a 8h',cls:'ok'};
+  if(horas<12)return{label:'8h a 12h',cls:'warn'};
+  if(horas<=24)return{label:'12h a 24h',cls:'warn'};
+  return{label:'Maior que 24h',cls:'crit'};
+}
+function transformAbertos(rows){
+  return rows.map(r=>{
+    const uf=col(r,'UF','ufservico','uf_servico'),cid=col(r,'Cidade','Municipio','cidadeservico','cidade_servico');
+    const cl=clusterDe(uf,cid);
+    const abertura=asDate(col(r,'Abertura do Ticket','Abertura','data_abertura','Data Abertura'));
+    const horas=abertura?slaComercial(abertura,new Date()):null;
+    const f=faixaSLA(horas);
+    return{id:col(r,'IDTicket','ID','ticket_id','protocolo','Protocolo','numero_ticket'),
+      cliente:col(r,'Cliente','razao','cliente_nome'),clienteFinal:col(r,'Cliente Final','cliente_final'),
+      tipo:col(r,'Tipo de Atendimento','tipo'),departamento:col(r,'Departamento'),
+      uf,cidade:cid,cluster:cl,mop:mopEps(cl),abertura,tempoDias:asNumber(col(r,'Tempo','tempo','dias'))||null,
+      horas,faixa:f.label,faixaCls:f.cls,status:col(r,'Status'),substatus:col(r,'Substatus','status')};
+  }).filter(r=>r.id);
+}
+function transformEncerrados(rows){
+  return rows.map(r=>{
+    const uf=col(r,'ufservico','UF','uf_servico'),cid=col(r,'cidadeservico','Cidade','cidade','cidade_servico');
+    const sla=asNumber(col(r,'tempo_ccs','sla','sla_horas','tempo_b2b','tempo_giga'));
+    const clusterFinal=clusterDe(uf,cid);
+    return{id:col(r,'protocolo','ticket_id','ID','IDTicket','idservico','numero_ticket'),
+      ticket:col(r,'ticket_id'),titulo:col(r,'titulo','Titulo'),tipo:col(r,'Tipo_Encerramento','tipo_encerramento','tipo'),
+      causaRaiz:col(r,'Causa_Raiz','causa_raiz'),uf,cidade:cid,cluster:clusterFinal,
+      clusterBase:col(r,'cluster','cluster_calc','nova_regional'),clusterRede:clusterRede(clusterFinal),
+      aging:sla,agingTxt:col(r,'aging_ccs','aging'),dentro8h:sla<=8,foraPrazo:sla>8&&sla<=24,outlier24h:sla>24,
+      numplan:col(r,'numplan'),clienteId:col(r,'cliente_id'),cliente:col(r,'Cliente','cliente'),
+      segmento:col(r,'segmento_cliente','segmento'),semana:col(r,'semana','sem')};
+  }).filter(r=>r.id);
+}
+function deriveRepetidos(base){
+  const porPlano={},porCliente={};
+  base.forEach(r=>{const np=String(r.numplan||'').trim();if(np&&np!=='1'&&np!=='0')porPlano[np]=(porPlano[np]||0)+1;
+    const ci=String(r.clienteId||'').trim();if(ci)porCliente[ci]=(porCliente[ci]||0)+1;});
+  return base.filter(r=>{const np=String(r.numplan||'').trim(),ci=String(r.clienteId||'').trim();
+    return (np&&np!=='1'&&np!=='0'&&porPlano[np]>1)||(ci&&porCliente[ci]>1);
+  }).map(r=>({...r,reincPlano:porPlano[String(r.numplan||'').trim()]||0,reincCliente:porCliente[String(r.clienteId||'').trim()]||0}));
+}
+function transformOFS(rows){
+  const map={};rows.forEach(r=>{const t=col(r,'tecnico','Tecnico','tecnico_campo','nome','Recurso')||'-';
+    const o=map[t]=map[t]||{tec:t,total:0,concl:0,cluster:col(r,'cluster','Cluster')};
+    const total=asNumber(col(r,'Total','OS totais','total_os')),concl=asNumber(col(r,'concluido','concluído','Concluidas','Concluídas'));
+    if(total||concl){o.total+=total||concl;o.concl+=concl;}else{o.total++;const st=normaliza(col(r,'status','Status','situacao'));if(st.includes('CONCL')||st.includes('EXEC')||st.includes('FINAL'))o.concl++;}
+  });
+  return Object.values(map).sort((a,b)=>b.concl-a.concl);
+}
+function transformFrota(rows){
+  return rows.map(r=>({placa:normaliza(col(r,'placa','Placa','veiculo','Veículo')),
+    condutor:col(r,'condutor','Condutor','motorista','Motorista'),superior:col(r,'superior','Superior','gestor','Gestor','supervisor','Supervisor')}))
+    .filter(r=>r.placa);
+}
+async function syncAtrixModule(modId,rows){
+  await DB.open();
+  if(modId==='b2b_abertos'){const data=transformAbertos(rows);await DB.set('abertos','data',data);return{records:data.length,note:'Painel ATRIX atualizado'};}
+  if(modId==='b2b_encerrados'){const data=transformEncerrados(rows),rep=deriveRepetidos(data);await DB.set('encerrados','data',data);await DB.set('repetidos','data',rep);return{records:data.length,note:'Encerrados, Rede e Repetidos atualizados'};}
+  if(modId==='ofs'){const data=transformOFS(rows);await DB.set('ofs','data',data);return{records:data.length,note:'Painel ATRIX atualizado'};}
+  if(modId==='frota'){const data=transformFrota(rows);await DB.set('frota','data',data);return{records:data.length,note:'Combustiveis do Painel ATRIX atualizado'};}
+  return{records:rows.length,note:'Base salva na Central; no Painel ATRIX, Rede usa B2B Encerrados'};
+}
 
 function fmtDate(ts){
   if(!ts)return'—';
@@ -372,22 +484,25 @@ function handleUpload(e){
   if(btn)btn.textContent='Processando…';
 
   const reader=new FileReader();
-  reader.onload=ev=>{
+  reader.onload=async ev=>{
     try{
-      const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+      const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array',cellDates:true});
 
       /* Detecta abas relevantes */
       const found=wb.SheetNames.filter(s=>mod.sheets.some(t=>s.toLowerCase().includes(t)));
       const targetSheet=found[0]||wb.SheetNames[0];
-      const rows=XLSX.utils.sheet_to_json(wb.Sheets[targetSheet]);
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[targetSheet],{defval:''});
 
       if(!rows.length){showToast('Arquivo sem dados na aba '+targetSheet,'err');return;}
+      const sync=await syncAtrixModule(modId,rows);
 
       /* Salva metadados + amostra no localStorage */
       const record={
         fileName:file.name,
         loadedAt:Date.now(),
-        records:rows.length,
+        records:sync.records,
+        rawRecords:rows.length,
+        atrixNote:sync.note,
         sheets:found.join(', ')||targetSheet,
         cols:Object.keys(rows[0]||{}).slice(0,12)
       };
@@ -402,7 +517,7 @@ function handleUpload(e){
       }
 
       setRecord(mod.key,record);
-      showToast(file.name+' · '+rows.length.toLocaleString('pt-BR')+' registros carregados ✓','ok');
+      showToast(file.name+' - '+sync.records.toLocaleString('pt-BR')+' registros. '+sync.note,'ok');
       renderGrid();
 
     }catch(err){
@@ -415,17 +530,27 @@ function handleUpload(e){
 }
 
 /* ============ CLEAR ============ */
-function clearModule(modId,key){
-  if(!confirm('Remover a base de '+MODULES.find(m=>m.id===modId).name+'?'))return;
+async function clearModule(modId,key){
+  const mod=MODULES.find(m=>m.id===modId);
+  if(!confirm('Remover a base de '+mod.name+'?'))return;
   clearRecord(key);
   clearRecord(key+'_rows');
+  await DB.open();
+  if(modId==='b2b_abertos')await DB.del('abertos','data');
+  if(modId==='b2b_encerrados'){await DB.del('encerrados','data');await DB.del('repetidos','data');}
+  if(modId==='ofs')await DB.del('ofs','data');
+  if(modId==='frota')await DB.del('frota','data');
   renderGrid();
   showToast('Base removida','ok');
 }
 
-function clearAll(){
+async function clearAll(){
   if(!confirm('Remover TODAS as bases carregadas?'))return;
   MODULES.forEach(m=>{clearRecord(m.key);clearRecord(m.key+'_rows');});
+  await DB.open();
+  for(const store of ['abertos','encerrados','repetidos','ofs','frota']){
+    await DB.del(store,'data');
+  }
   renderGrid();
   showToast('Todas as bases removidas','ok');
 }

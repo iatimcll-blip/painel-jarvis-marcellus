@@ -6,6 +6,7 @@ import { join } from "node:path";
 const required = [
   "index.html",
   "painel_atrix.html",
+  "central_dados.html",
   "painel-atrix-redesign.css",
   "painel-atrix-redesign.js",
   "vercel.json",
@@ -27,14 +28,17 @@ for (const snippet of requiredSnippets) {
   }
 }
 
-if (/\uFFFD|[\u0080-\u009F]/.test(html)) {
-  throw new Error("painel_atrix.html contem caracteres corrompidos.");
+function assertNoBrokenChars(file, content) {
+  if (/\uFFFD|[\u0080-\u009F]/.test(content)) {
+    throw new Error(`${file} contem caracteres corrompidos.`);
+  }
 }
 
-const inlineScripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
-const tmp = await mkdtemp(join(tmpdir(), "jarvis-static-"));
+async function checkInlineScripts(file) {
+  const content = await readFile(file, "utf8");
+  const inlineScripts = [...content.matchAll(/<script>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
+  const tmp = await mkdtemp(join(tmpdir(), "jarvis-static-"));
 
-try {
   for (let i = 0; i < inlineScripts.length; i += 1) {
     const scriptPath = join(tmp, `inline-${i}.js`);
     await writeFile(scriptPath, inlineScripts[i], "utf8");
@@ -43,11 +47,16 @@ try {
     });
 
     if (result.status !== 0) {
-      throw new Error(`JavaScript inline invalido em painel_atrix.html:\n${result.stderr || result.stdout}`);
+      await rm(tmp, { recursive: true, force: true });
+      throw new Error(`JavaScript inline invalido em ${file}:\n${result.stderr || result.stdout}`);
     }
   }
-} finally {
+
   await rm(tmp, { recursive: true, force: true });
 }
+
+assertNoBrokenChars("painel_atrix.html", html);
+await checkInlineScripts("painel_atrix.html");
+await checkInlineScripts("central_dados.html");
 
 console.log("OK: estrutura estatica pronta para GitHub/Vercel.");
