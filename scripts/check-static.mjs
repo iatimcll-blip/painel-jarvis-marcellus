@@ -17,15 +17,8 @@ for (const file of required) {
 }
 
 const html = await readFile("painel_atrix.html", "utf8");
-const requiredSnippets = [
-  '<link rel="stylesheet" href="./painel-atrix-redesign.css">',
-  '<script src="./painel-atrix-redesign.js"></script>',
-];
-
-for (const snippet of requiredSnippets) {
-  if (!html.includes(snippet)) {
-    throw new Error(`Trecho obrigatorio ausente em painel_atrix.html: ${snippet}`);
-  }
+if (!html.includes("Jarvis MCLL") || !html.includes("Dashboard com Regras")) {
+  throw new Error("painel_atrix.html nao contem o layout principal do Jarvis MCLL.");
 }
 
 function assertNoBrokenChars(file, content) {

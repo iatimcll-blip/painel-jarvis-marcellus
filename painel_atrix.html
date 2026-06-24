@@ -1,1088 +1,1663 @@
 ﻿<!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel Jarvis - Marcellus</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<style>
-/* ============================================================
-   PAINEL JARVIS - MARCELLUS  ·  MCLL Monitoramento B2B
-   Sistema de design travado: cor só p/ status · superfícies planas
-   ============================================================ */
-:root{
-  --bg:#F6F7F9; --surface:#FFFFFF; --surface-2:#F1F3F6;
-  --border:rgba(0,0,0,.10); --border-strong:rgba(0,0,0,.18);
-  --text:#1A1D23; --text-muted:#5C636E; --text-faint:#8A929E;
-  --accent:#2E6BE6;
-  --ok:#1E9E5A; --ok-bg:rgba(30,158,90,.12);
-  --warn:#C8860D; --warn-bg:rgba(200,134,13,.14);
-  --crit:#D23F3F; --crit-bg:rgba(210,63,63,.12);
-  --neutral:#5C636E; --neutral-bg:rgba(92,99,110,.10);
-  --radius:12px; --radius-sm:8px; --sp:8px;
-  --shadow:none;
-  --grid:rgba(0,0,0,.06);
-}
-[data-theme="dark"]{
-  --bg:#0E1116; --surface:#171B22; --surface-2:#1E232C;
-  --border:rgba(255,255,255,.12); --border-strong:rgba(255,255,255,.20);
-  --text:#E8EAED; --text-muted:#9AA1AC; --text-faint:#6B7280;
-  --accent:#5B8CF5;
-  --ok:#35C77D; --ok-bg:rgba(53,199,125,.14);
-  --warn:#E0A93B; --warn-bg:rgba(224,169,59,.16);
-  --crit:#F06464; --crit-bg:rgba(240,100,100,.16);
-  --neutral:#9AA1AC; --neutral-bg:rgba(154,161,172,.12);
-  --grid:rgba(255,255,255,.06);
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{
-  font-family:'Inter',system-ui,sans-serif;
-  background:var(--bg); color:var(--text);
-  font-size:14px; line-height:1.5;
-  -webkit-font-smoothing:antialiased;
-  transition:background .2s,color .2s;
-}
-.mono{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
-button{font-family:inherit;cursor:pointer;color:inherit}
-::-webkit-scrollbar{width:9px;height:9px}
-::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:6px}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jarvis MCLL — Dashboard com Regras ATRIX</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-/* ---------- LOGIN ---------- */
-#login{
-  position:fixed;inset:0;z-index:1000;
-  display:flex;align-items:center;justify-content:center;
-  background:var(--bg);
-}
-.login-card{
-  width:340px;max-width:90vw;background:var(--surface);
-  border:.5px solid var(--border);border-radius:var(--radius);
-  padding:32px 28px;text-align:center;
-}
-.login-logo{
-  width:64px;height:64px;border-radius:16px;margin:0 auto 18px;
-  background:var(--accent);display:flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:24px;color:#fff;
-}
-.login-card h1{font-size:17px;font-weight:600;margin-bottom:4px}
-.login-card p{font-size:12px;color:var(--text-muted);margin-bottom:22px}
-.field{text-align:left;margin-bottom:14px}
-.field label{display:block;font-size:11px;color:var(--text-muted);margin-bottom:5px;font-weight:500}
-.field input{
-  width:100%;padding:10px 12px;background:var(--surface-2);
-  border:.5px solid var(--border);border-radius:var(--radius-sm);
-  color:var(--text);font-size:14px;font-family:inherit;
-}
-.field input:focus{outline:2px solid var(--accent);outline-offset:-1px}
-.btn-primary{
-  width:100%;padding:11px;background:var(--accent);color:#fff;
-  border:none;border-radius:var(--radius-sm);font-weight:600;font-size:14px;
-  margin-top:6px;
-}
-.login-err{color:var(--crit);font-size:12px;margin-top:10px;min-height:16px}
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      line-height: 1.6;
+    }
 
-/* ---------- HEADER ---------- */
-header{
-  position:sticky;top:0;z-index:100;
-  background:var(--surface);border-bottom:.5px solid var(--border);
-}
-.hbar{display:flex;align-items:center;gap:16px;padding:10px 20px}
-.brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
-.brand .logo{
-  width:34px;height:34px;border-radius:9px;background:var(--accent);
-  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;
-}
-.brand h1{font-size:15px;font-weight:600;letter-spacing:-.2px;white-space:nowrap}
-.brand span{font-size:10.5px;color:var(--text-faint);display:block;font-weight:400}
-.counters{display:flex;gap:8px;margin-left:8px}
-.counter{
-  display:flex;flex-direction:column;align-items:center;
-  padding:5px 14px;border:.5px solid var(--border);border-radius:var(--radius-sm);
-  background:var(--surface-2);min-width:74px;
-}
-.counter b{font-family:'JetBrains Mono';font-size:17px;font-weight:600;line-height:1}
-.counter small{font-size:9.5px;color:var(--text-muted);margin-top:3px;text-transform:uppercase;letter-spacing:.4px}
-.counter.ab b{color:var(--accent)} .counter.en b{color:var(--ok)} .counter.rp b{color:var(--warn)}
-.hspace{flex:1}
-.legend{display:flex;gap:12px;align-items:center;font-size:10.5px;color:var(--text-muted)}
-.legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;vertical-align:middle}
-.theme-toggle{
-  width:36px;height:36px;border-radius:9px;border:.5px solid var(--border);
-  background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:16px;
-}
-/* ---------- TABS ---------- */
-nav.tabs{display:flex;gap:2px;padding:0 14px;overflow-x:auto;border-top:.5px solid var(--border)}
-nav.tabs button{
-  padding:11px 15px;background:none;border:none;border-bottom:2px solid transparent;
-  font-size:13px;font-weight:500;color:var(--text-muted);white-space:nowrap;
-}
-nav.tabs button:hover{color:var(--text)}
-nav.tabs button.active{color:var(--accent);border-bottom-color:var(--accent)}
+    .header {
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-/* ---------- LAYOUT ---------- */
-main{padding:20px;max-width:1500px;margin:0 auto}
-.tabpane{display:none}
-.tabpane.active{display:block;animation:fade .25s ease}
-@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-.pane-head{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
-.pane-head h2{font-size:18px;font-weight:600;letter-spacing:-.3px}
-.pane-head .sub{font-size:12px;color:var(--text-muted)}
+    .header h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
 
-/* cards / grids */
-.grid{display:grid;gap:12px}
-.g-auto{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
-.g-2{grid-template-columns:repeat(2,1fr)} .g-3{grid-template-columns:repeat(3,1fr)} .g-4{grid-template-columns:repeat(4,1fr)}
-@media(max-width:880px){.g-2,.g-3,.g-4{grid-template-columns:1fr}}
-.card{
-  background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);
-  padding:16px;
-}
-.card.span2{grid-column:span 2}
-@media(max-width:880px){.card.span2{grid-column:auto}}
-.card h3{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
-.metric{font-family:'JetBrains Mono';font-size:26px;font-weight:600;line-height:1.1}
-.metric small{font-size:12px;color:var(--text-muted);font-family:'Inter';font-weight:400}
-.metric-label{font-size:11px;color:var(--text-muted);margin-top:4px}
-.delta{font-size:11px;font-weight:600;margin-top:4px}
+    .header-subtitle {
+      font-size: 13px;
+      color: #666;
+      margin-top: 4px;
+    }
 
-/* KPI status band */
-.kpi-band{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:16px}
-.kpi{background:var(--surface);border:.5px solid var(--border);border-left:3px solid var(--neutral);border-radius:var(--radius);padding:13px 15px}
-.kpi.ok{border-left-color:var(--ok)} .kpi.warn{border-left-color:var(--warn)} .kpi.crit{border-left-color:var(--crit)}
-.kpi .k-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px}
-.kpi .k-val{font-family:'JetBrains Mono';font-size:23px;font-weight:600;margin-top:4px}
-.kpi .k-target{font-size:10.5px;color:var(--text-faint);margin-top:2px}
+    .tabs-container {
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 0 2rem;
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+    }
 
-/* tables */
-.tbl-wrap{overflow-x:auto;border:.5px solid var(--border);border-radius:var(--radius)}
-table{width:100%;border-collapse:collapse;font-size:12.5px}
-thead th{
-  position:sticky;top:0;background:var(--surface-2);color:var(--text-muted);
-  font-weight:600;text-align:left;padding:9px 12px;border-bottom:.5px solid var(--border);
-  font-size:11px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;cursor:pointer;
-}
-tbody td{padding:8px 12px;border-bottom:.5px solid var(--border);white-space:nowrap}
-tbody tr:nth-child(even){background:var(--surface-2)}
-tbody tr:hover{background:var(--neutral-bg)}
-.ellip{max-width:200px;overflow:hidden;text-overflow:ellipsis}
+    .tab-button {
+      padding: 1rem 1.5rem;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 14px;
+      color: #666;
+      font-weight: 500;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
 
-/* status pills */
-.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;line-height:1.6}
-.pill.ok{background:var(--ok-bg);color:var(--ok)}
-.pill.warn{background:var(--warn-bg);color:var(--warn)}
-.pill.crit{background:var(--crit-bg);color:var(--crit)}
-.pill.neutral{background:var(--neutral-bg);color:var(--neutral)}
+    .tab-button:hover {
+      color: #1a1a1a;
+      background: #f9f9f9;
+    }
 
-/* controls */
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
-.btn{
-  padding:8px 13px;background:var(--surface);border:.5px solid var(--border);
-  border-radius:var(--radius-sm);font-size:12.5px;font-weight:500;color:var(--text);display:inline-flex;gap:6px;align-items:center;
-}
-.btn:hover{border-color:var(--border-strong)}
-.btn.accent{background:var(--accent);color:#fff;border-color:var(--accent)}
-.btn.ghost{background:transparent}
-select,.input{
-  padding:8px 11px;background:var(--surface);border:.5px solid var(--border);
-  border-radius:var(--radius-sm);font-size:12.5px;color:var(--text);font-family:inherit;
-}
-.chip{
-  padding:5px 12px;border-radius:20px;border:.5px solid var(--border);background:var(--surface);
-  font-size:12px;font-weight:500;color:var(--text-muted);
-}
-.chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-.chart-box{position:relative;height:240px}
-.chart-box.tall{height:300px}
-.empty{text-align:center;padding:48px 20px;color:var(--text-faint)}
-.empty .ic{font-size:34px;opacity:.5;margin-bottom:10px}
-.upload-zone{
-  border:1px dashed var(--border-strong);border-radius:var(--radius);
-  padding:26px;text-align:center;color:var(--text-muted);cursor:pointer;background:var(--surface-2);
-}
-.upload-zone:hover{border-color:var(--accent);color:var(--accent)}
-.spark{height:26px;width:90px}
-.subtabs{display:flex;gap:6px;margin-bottom:14px;border-bottom:.5px solid var(--border)}
-.subtabs button{padding:8px 12px;background:none;border:none;border-bottom:2px solid transparent;font-size:12.5px;font-weight:500;color:var(--text-muted)}
-.subtabs button.active{color:var(--accent);border-bottom-color:var(--accent)}
-.subpane{display:none}.subpane.active{display:block}
-footer{text-align:center;padding:20px;color:var(--text-faint);font-size:11px;border-top:.5px solid var(--border);margin-top:30px}
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:center;justify-content:center}
-.modal-bg.show{display:flex}
-.modal{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);padding:22px;width:420px;max-width:92vw;max-height:88vh;overflow:auto}
-.modal h3{font-size:15px;font-weight:600;margin-bottom:14px;text-transform:none;letter-spacing:0;color:var(--text)}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:8px;font-size:13px;z-index:900;opacity:0;transition:opacity .25s;pointer-events:none}
-.toast.show{opacity:1}
-</style>
-<link rel="stylesheet" href="./painel-atrix-redesign.css">
+    .tab-button.active {
+      color: #1a1a1a;
+      border-bottom-color: #007bff;
+    }
+
+    .content-wrapper {
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: #1a1a1a;
+    }
+
+    .panel h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 1.5rem 0 1rem;
+      color: #1a1a1a;
+    }
+
+    .metric-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    .metric-card {
+      background: #f9f9f9;
+      padding: 1rem;
+      border-radius: 6px;
+      border: 1px solid #f0f0f0;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .metric-value {
+      font-size: 26px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .metric-status {
+      font-size: 11px;
+      margin-top: 4px;
+      padding: 4px 8px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    .status-ok {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-warning {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-alert {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="file"],
+    select {
+      padding: 8px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s ease;
+    }
+
+    input[type="text"]:focus,
+    input[type="date"]:focus,
+    select:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    button {
+      padding: 8px 16px;
+      border: 1px solid #e0e0e0;
+      background: #fff;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: #f9f9f9;
+      border-color: #ccc;
+    }
+
+    button.primary {
+      background: #007bff;
+      color: #fff;
+      border-color: #007bff;
+    }
+
+    button.primary:hover {
+      background: #0056b3;
+      border-color: #0056b3;
+    }
+
+    button.danger {
+      background: #dc3545;
+      color: #fff;
+      border-color: #dc3545;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    table thead {
+      background: #f9f9f9;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    table th {
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 600;
+      color: #666;
+    }
+
+    table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #f0f0f0;
+      color: #555;
+    }
+
+    table tbody tr:hover {
+      background: #f9f9f9;
+    }
+
+    .info-message {
+      background: #e8f4f8;
+      color: #0066cc;
+      padding: 12px;
+      border-left: 4px solid #0066cc;
+      border-radius: 4px;
+      font-size: 13px;
+      margin-bottom: 1rem;
+    }
+
+    .alert-message {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 12px;
+      border-left: 4px solid #f5c6cb;
+      border-radius: 4px;
+      font-size: 13px;
+      margin-bottom: 1rem;
+    }
+
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 12px;
+      border-left: 4px solid #c3e6cb;
+      border-radius: 4px;
+      font-size: 13px;
+      margin-bottom: 1rem;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      padding: 1rem;
+      background: #f9f9f9;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+    }
+
+    .data-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .data-item-label {
+      font-size: 11px;
+      color: #999;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .data-item-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .cluster-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .cluster-btn {
+      padding: 6px 12px;
+      border: 1px solid #e0e0e0;
+      background: #fff;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .cluster-btn:hover {
+      background: #f0f0f0;
+      border-color: #ccc;
+    }
+
+    .cluster-btn.active {
+      background: #007bff;
+      color: #fff;
+      border-color: #007bff;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-bottom: 1.5rem;
+    }
+
+    .error-msg {
+      color: #721c24;
+      font-size: 13px;
+      padding: 8px;
+      background: #f8d7da;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      .tabs-container {
+        padding: 0 1rem;
+      }
+
+      .tab-button {
+        padding: 0.75rem 1rem;
+        font-size: 13px;
+      }
+
+      .content-wrapper {
+        padding: 1rem;
+      }
+
+      .metric-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .filter-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<!-- ===================== LOGIN (desativado) ===================== -->
-<div id="login" style="display:none">
-  <div class="login-card">
-    <div class="login-logo">M</div>
-    <h1>Painel Jarvis - Marcellus</h1>
-    <p>MCLL · Monitoramento B2B</p>
-    <div class="field"><label>Usuário</label><input id="lg-user" autocomplete="username" placeholder="usuário"></div>
-    <div class="field"><label>Senha</label><input id="lg-pass" type="password" autocomplete="current-password" placeholder="********"></div>
-    <button class="btn-primary" onclick="App.login()">Entrar</button>
-    <div class="login-err" id="lg-err"></div>
+  <div class="header">
+    <div>
+      <h1>Jarvis MCLL</h1>
+      <div class="header-subtitle">Dashboard com Regras de Análise ATRIX integradas</div>
+    </div>
   </div>
-</div>
 
-<!-- ===================== APP ===================== -->
-<div id="app" style="display:block">
-<header>
-  <div class="hbar">
-    <div class="brand">
-      <div class="logo">M</div>
-      <div><h1>Painel Jarvis - Marcellus</h1><span>MCLL · Monitoramento B2B</span></div>
-    </div>
-    <div class="counters">
-      <div class="counter ab"><b id="c-ab">0</b><small>Abertos</small></div>
-      <div class="counter en"><b id="c-en">0</b><small>Encerrados</small></div>
-      <div class="counter rp"><b id="c-rp">0</b><small>Repetidos</small></div>
-    </div>
-    <div class="hspace"></div>
-    <div class="legend">
-      <span><i style="background:var(--ok)"></i>Meta</span>
-      <span><i style="background:var(--warn)"></i>Atenção</span>
-      <span><i style="background:var(--crit)"></i>Crítico</span>
-    </div>
-    <button class="theme-toggle" id="themeBtn" onclick="App.toggleTheme()" title="Alternar tema">Lua</button>
+  <div class="tabs-container">
+    <button class="tab-button active" onclick="switchTab(event, 'dashboard')">Dashboard</button>
+    <button class="tab-button" onclick="switchTab(event, 'b2b-abertos')">B2B Abertos</button>
+    <button class="tab-button" onclick="switchTab(event, 'b2b-encerrados')">B2B Encerrados</button>
+    <button class="tab-button" onclick="switchTab(event, 'rede')">Rede</button>
+    <button class="tab-button" onclick="switchTab(event, 'ofs')">OFS</button>
+    <button class="tab-button" onclick="switchTab(event, 'combustivel')">Combustíveis</button>
+    <button class="tab-button" onclick="switchTab(event, 'repetidos')">Repetidos</button>
+    <button class="tab-button" onclick="switchTab(event, 'dados')">Dados</button>
   </div>
-  <nav class="tabs" id="tabs">
-    <button class="active" data-tab="abertos">B2B Abertos</button>
-    <button data-tab="encerrados">B2B Encerrados</button>
-    <button data-tab="repetidos">B2B Repetidos</button>
-    <button data-tab="rede">Rede</button>
-    <button data-tab="combustiveis">Combustíveis</button>
-    <button data-tab="ofs">Produtividade OFS</button>
-    <button data-tab="whatsapp">WhatsApp / Monitor</button>
-    <button data-tab="report">Report</button>
-    <button data-tab="acesso">Acesso &amp; Modais</button>
-  </nav>
-</header>
 
-<main>
-  <!-- ABERTOS -->
-  <section class="tabpane active" data-pane="abertos">
-    <div class="pane-head">
-      <h2>B2B Abertos</h2><span class="sub">SLA prazo · faixas de aging · clusters geográficos</span>
-      <div class="hspace" style="flex:1"></div>
-      <button class="btn accent" onclick="document.getElementById('up-abertos').click()">Importar base Abertos</button>
-      <input type="file" id="up-abertos" accept=".xlsx,.xls" hidden>
-      <button class="btn ghost" onclick="App.clear('abertos')">Limpar</button>
-    </div>
-    <div id="abertos-empty" class="empty">Importe a base de chamados abertos (.xlsx) para começar.</div>
-    <div id="abertos-content" style="display:none">
-      <div class="kpi-band" id="ab-kpis"></div>
-      <div class="toolbar" id="ab-filters"></div>
-      <div class="grid g-2" style="margin-bottom:14px">
-        <div class="card"><h3>Distribuição por faixa de SLA</h3><div class="chart-box"><canvas id="ch-ab-faixa"></canvas></div></div>
-        <div class="card"><h3>Abertos por cluster</h3><div class="chart-box"><canvas id="ch-ab-cluster"></canvas></div></div>
-      </div>
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <h3 style="margin:0">Chamados abertos</h3>
-          <button class="btn" onclick="App.copyPNG('ab-table-wrap')">Copiar tabela (PNG)</button>
+  <div class="content-wrapper">
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="tab-content active">
+      <div class="panel">
+        <h2>Dashboard Executivo</h2>
+        <p style="color: #666; margin-bottom: 1.5rem;">Resumo operacional do ambiente B2B com todas as métricas integradas</p>
+
+        <div class="metric-cards">
+          <div class="metric-card">
+            <div class="metric-label">B2B Abertos</div>
+            <div class="metric-value" id="dash-abertos">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">B2B Encerrados</div>
+            <div class="metric-value" id="dash-encerrados">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Rede - Prazo</div>
+            <div class="metric-value" id="dash-rede-prazo">—</div>
+            <div class="metric-status" id="dash-rede-status"></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">OFS - Taxa</div>
+            <div class="metric-value" id="dash-ofs-taxa">—</div>
+            <div class="metric-status" id="dash-ofs-status"></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Combustível</div>
+            <div class="metric-value" id="dash-combustivel">R$ 0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Alertas</div>
+            <div class="metric-value" id="dash-alertas">0</div>
+          </div>
         </div>
-        <div class="tbl-wrap" id="ab-table-wrap"><table id="ab-table"></table></div>
       </div>
-    </div>
-  </section>
 
-  <!-- ENCERRADOS -->
-  <section class="tabpane" data-pane="encerrados">
-    <div class="pane-head">
-      <h2>B2B Encerrados</h2><span class="sub">dentro de 8h · outlier +24h · TME por cluster e semana</span>
-      <div class="hspace" style="flex:1"></div>
-      <select id="en-week" class="input"><option value="">Todas as semanas</option></select>
-      <button class="btn accent" onclick="document.getElementById('up-encerrados').click()">Importar base Encerrados</button>
-      <input type="file" id="up-encerrados" accept=".xlsx,.xls" hidden>
-      <button class="btn ghost" onclick="App.clear('encerrados')">Limpar</button>
-    </div>
-    <div id="encerrados-empty" class="empty">Importe a base BI de chamados encerrados (.xlsx).</div>
-    <div id="encerrados-content" style="display:none">
-      <div class="kpi-band" id="en-kpis"></div>
-      <div class="grid g-2" style="margin-bottom:14px">
-        <div class="card"><h3>Performance <=8h por cluster</h3><div class="chart-box"><canvas id="ch-en-cluster"></canvas></div></div>
-        <div class="card"><h3>Tipo de encerramento</h3><div class="chart-box"><canvas id="ch-en-tipo"></canvas></div></div>
-      </div>
-      <div class="card span2" style="margin-bottom:14px"><h3>Evolução semanal - % dentro de 8h</h3><div class="chart-box"><canvas id="ch-en-semana"></canvas></div></div>
-      <div class="grid g-auto" id="en-cluster-cards"></div>
-    </div>
-  </section>
+      <div class="panel">
+        <h2>Gerenciar Bases de Dados</h2>
+        <p style="color: #666; margin-bottom: 1.5rem;">Carregue as bases em formato Excel para processar automaticamente com as regras ATRIX</p>
 
-  <!-- REPETIDOS -->
-  <section class="tabpane" data-pane="repetidos">
-    <div class="pane-head">
-      <h2>B2B Repetidos</h2><span class="sub">reincidência por cliente · protocolo · cluster</span>
-      <div class="hspace" style="flex:1"></div>
-      <button class="btn accent" onclick="document.getElementById('up-repetidos').click()">Importar base Repetidos</button>
-      <input type="file" id="up-repetidos" accept=".xlsx,.xls" hidden>
-      <button class="btn ghost" onclick="App.clear('repetidos')">Limpar</button>
-    </div>
-    <div id="repetidos-empty" class="empty">Importe a base de chamados repetidos (.xlsx).</div>
-    <div id="repetidos-content" style="display:none">
-      <div class="kpi-band" id="rp-kpis"></div>
-      <div class="card"><h3>Top reincidências</h3><div class="tbl-wrap" id="rp-table-wrap"><table id="rp-table"></table></div></div>
-    </div>
-  </section>
+        <div id="upload-messages"></div>
 
-  <!-- REDE -->
-  <section class="tabpane" data-pane="rede">
-    <div class="pane-head"><h2>Painel Rede</h2><span class="sub">NOC · SLA prazo · outlier +24h · TME · backbone × acesso</span></div>
-    <div class="kpi-band" id="rede-kpis">
-      <div class="kpi ok"><div class="k-label">SLA prazo</div><div class="k-val">88,9%</div><div class="k-target">meta >= 88,9%</div></div>
-      <div class="kpi warn"><div class="k-label">Outlier +24h</div><div class="k-val">4,9%</div><div class="k-target">limite <= 4,9%</div></div>
-      <div class="kpi ok"><div class="k-label">TME</div><div class="k-val">5,8h</div><div class="k-target">meta <= 6,0h</div></div>
-      <div class="kpi crit"><div class="k-label">OS críticas</div><div class="k-val">12</div><div class="k-target">+24h em aberto</div></div>
-    </div>
-    <div class="grid g-2" style="margin-bottom:14px">
-      <div class="card"><h3>Evolução diária - SLA prazo</h3><div class="chart-box"><canvas id="ch-rede-dia"></canvas></div></div>
-      <div class="card"><h3>Backbone × Acesso</h3><div class="chart-box"><canvas id="ch-rede-tipo"></canvas></div></div>
-    </div>
-    <div class="card"><h3>Performance por cluster</h3><div class="tbl-wrap"><table id="rede-table"></table></div></div>
-  </section>
+        <table>
+          <thead>
+            <tr>
+              <th>Base</th>
+              <th>Descrição</th>
+              <th>Colunas Obrigatórias</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>B2B Abertos</strong></td>
+              <td>Chamados ativos</td>
+              <td>ID, Cliente, UF, Cidade, Data_Abertura, SLA_Horas, Técnico</td>
+              <td><input type="file" id="file-abertos" accept=".xlsx,.xls,.csv" onchange="processFile('abertos')" style="padding:4px; font-size:12px;"></td>
+            </tr>
+            <tr>
+              <td><strong>B2B Encerrados</strong></td>
+              <td>Chamados resolvidos</td>
+              <td>Protocolo, Cliente, UF, Cidade, Data_Abertura, Data_Encerramento, Causa_Raiz, SLA_Horas</td>
+              <td><input type="file" id="file-encerrados" accept=".xlsx,.xls,.csv" onchange="processFile('encerrados')" style="padding:4px; font-size:12px;"></td>
+            </tr>
+            <tr>
+              <td><strong>Rede (ACESSO)</strong></td>
+              <td>Performance de acesso</td>
+              <td>Cluster, Data, Qtd_Registros, Tempo_Resposta</td>
+              <td><input type="file" id="file-rede" accept=".xlsx,.xls,.csv" onchange="processFile('rede')" style="padding:4px; font-size:12px;"></td>
+            </tr>
+            <tr>
+              <td><strong>OFS (Cronograma)</strong></td>
+              <td>Produtividade técnicos</td>
+              <td>Técnico, Data, Tipo_Atividade, Status, UF</td>
+              <td><input type="file" id="file-ofs" accept=".xlsx,.xls,.csv" onchange="processFile('ofs')" style="padding:4px; font-size:12px;"></td>
+            </tr>
+            <tr>
+              <td><strong>Alelo (Combustível)</strong></td>
+              <td>Transações de combustível</td>
+              <td>Placa, Condutor, Data_Transacao, Valor, Status</td>
+              <td><input type="file" id="file-alelo" accept=".xlsx,.xls,.csv" onchange="processFile('alelo')" style="padding:4px; font-size:12px;"></td>
+            </tr>
+          </tbody>
+        </table>
 
-  <!-- COMBUSTÍVEIS -->
-  <section class="tabpane" data-pane="combustiveis">
-    <div class="pane-head"><h2>Combustíveis</h2><span class="sub">Portal Alelo · saldo · rateio · transações por frota</span></div>
-    <div class="subtabs">
-      <button class="active" data-sub="consumo">Consumo &amp; Saldo</button>
-      <button data-sub="transacoes">Transações</button>
-    </div>
-    <!-- sub: consumo -->
-    <div class="subpane active" data-subpane="consumo">
-      <div class="grid g-3" style="margin-bottom:14px">
-        <div class="card" style="border-top:3px solid var(--accent)"><h3>Saldo Disponível</h3><div class="metric mono" id="cb-saldo">R$ 0,00</div><div class="metric-label">Portal Alelo</div></div>
-        <div class="card" style="border-top:3px solid var(--ok)"><h3>Veículos Ativos</h3><div class="metric mono" id="cb-veic">0</div><div class="metric-label">frota cadastrada</div></div>
-        <div class="card" style="border-top:3px solid var(--warn)"><h3>Rateio Sugerido</h3><div class="metric mono" id="cb-rateio">R$ 0,00</div><div class="metric-label">por veículo</div></div>
-      </div>
-      <div class="toolbar">
-        <button class="btn" onclick="App.openModal('mAporte')">Aporte</button>
-        <button class="btn" onclick="App.openModal('mRetirada')">Retirada</button>
-        <span class="sub mono">Saldo Geral = Aportes - Retiradas: <b id="cb-geral">R$ 0,00</b></span>
-      </div>
-      <div class="card"><h3>Rateio por condutor / superior</h3><div class="tbl-wrap"><table id="cb-rateio-table"></table></div></div>
-    </div>
-    <!-- sub: transacoes -->
-    <div class="subpane" data-subpane="transacoes">
-      <div class="pane-head" style="margin-bottom:12px">
-        <span class="sub">Balizado pela frota cadastrada (dFuelVehicles) · só transações Aprovadas</span>
-        <div class="hspace" style="flex:1"></div>
-        <button class="btn accent" onclick="document.getElementById('up-transacoes').click()">Upload base abastecimento Alelo</button>
-        <input type="file" id="up-transacoes" accept=".xlsx,.xls" hidden>
-        <button class="btn" onclick="App.copyPNG('tr-block')">PNG</button>
-        <button class="btn" onclick="ATRIX_CONSUMO.exportExcel()">Excel</button>
-      </div>
-      <div id="tr-empty" class="empty">Suba a base de abastecimento Alelo. O motor recalcula automaticamente.</div>
-      <div id="tr-block" style="display:none">
-        <div class="kpi-band" id="tr-kpis"></div>
-        <div class="grid g-2" style="margin-bottom:14px">
-          <div class="card"><h3>Consumo por superior</h3><div class="chart-box"><canvas id="ch-tr-sup"></canvas></div></div>
-          <div class="card"><h3>Top placas por valor</h3><div class="chart-box"><canvas id="ch-tr-placa"></canvas></div></div>
+        <div style="margin-top: 1.5rem;">
+          <button class="primary" onclick="exportData()">Exportar Dados Carregados</button>
+          <button class="danger" onclick="clearAllData()">Limpar Tudo</button>
         </div>
-        <div class="card"><h3>Transações consolidadas por placa</h3><div class="tbl-wrap"><table id="tr-table"></table></div></div>
+      </div>
+
+      <div class="panel">
+        <h2>Documentação de Regras</h2>
+        <p style="color: #666; margin-bottom: 1rem;">As análises utilizam as seguintes regras:</p>
+        <ul style="color: #666; font-size: 13px; line-height: 1.8; margin-left: 1.5rem;">
+          <li><strong>Prazo (SLA):</strong> Cálculo em horas comerciais (seg-sex, 08:00-18:00) com NETWORKDAYS.INTL</li>
+          <li><strong>Outlier:</strong> Registros com tempo > 24 horas</li>
+          <li><strong>Taxa de Conformidade:</strong> % de registros dentro do SLA (Meta ≥85%)</li>
+          <li><strong>Cluster:</strong> Determinado automaticamente por UF + Cidade</li>
+          <li><strong>MOP/EPS:</strong> Mapeamento EPS-SLN, MOP GIGA+, EPS-ADX</li>
+          <li><strong>Semana ISO:</strong> ISOWEEKNUM (ISO 8601)</li>
+          <li><strong>TME/TMR:</strong> Tempo médio de execução/resolução</li>
+          <li><strong>OFS:</strong> Exclui Almoço, Checklist, Descanso do cálculo de produtividade</li>
+        </ul>
       </div>
     </div>
-  </section>
 
-  <!-- OFS -->
-  <section class="tabpane" data-pane="ofs">
-    <div class="pane-head">
-      <h2>Produtividade OFS</h2><span class="sub">técnicos de campo · OS executadas · taxa de conclusão</span>
-      <div class="hspace" style="flex:1"></div>
-      <button class="btn accent" onclick="document.getElementById('up-ofs').click()">Importar base OFS</button>
-      <input type="file" id="up-ofs" accept=".xlsx,.xls" hidden>
-    </div>
-    <div id="ofs-empty" class="empty">Importe a base de produtividade OFS (.xlsx).</div>
-    <div id="ofs-content" style="display:none">
-      <div class="kpi-band" id="ofs-kpis"></div>
-      <div class="card span2" style="margin-bottom:14px"><h3>Ranking de técnicos</h3><div class="chart-box tall"><canvas id="ch-ofs"></canvas></div></div>
-      <div class="card"><h3>Detalhe por técnico</h3><div class="tbl-wrap"><table id="ofs-table"></table></div></div>
-    </div>
-  </section>
+    <!-- B2B ABERTOS -->
+    <div id="b2b-abertos" class="tab-content">
+      <div class="panel">
+        <h2>Chamados em Aberto</h2>
+        <p style="color: #666; margin-bottom: 1.5rem;">SLA, substatus, técnicos, MOP/EPS e tabela operacional</p>
 
-  <!-- WHATSAPP -->
-  <section class="tabpane" data-pane="whatsapp">
-    <div class="pane-head"><h2>WhatsApp / Monitor</h2><span class="sub">cobrança automática B2B · SLA em tempo real</span></div>
-    <div class="kpi-band" id="wa-kpis">
-      <div class="kpi"><div class="k-label">Chamados em cobrança</div><div class="k-val" id="wa-cobr">0</div><div class="k-target">loop 120 min</div></div>
-      <div class="kpi"><div class="k-label">Reports recebidos</div><div class="k-val" id="wa-rep">0</div><div class="k-target">hoje</div></div>
-      <div class="kpi"><div class="k-label">Encerrados</div><div class="k-val" id="wa-enc">0</div><div class="k-target">no período</div></div>
-    </div>
-    <div class="card">
-      <h3>Monitoramento WhatsApp - MCLL</h3>
-      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Sistema de cobrança de report a cada 120 min via Evolution API (Railway), integrado à base Abertos. Use chip dedicado.</p>
-      <a class="btn accent" id="wa-link" href="about:blank" target="_blank">Abrir monitor (Railway)</a>
-      <button class="btn" onclick="App.openModal('mWaUrl')" style="margin-left:8px">Configurar URL</button>
-    </div>
-  </section>
+        <div id="b2b-abertos-msg"></div>
 
-  <!-- REPORT -->
-  <section class="tabpane" data-pane="report">
-    <div class="pane-head"><h2>Report</h2><span class="sub">geração de relatório consolidado</span></div>
-    <div class="card" style="max-width:560px">
-      <h3>Selecionar painéis do relatório</h3>
-      <div id="rep-checks" style="display:grid;gap:8px;margin:12px 0">
-        <label><input type="checkbox" checked value="abertos"> B2B Abertos</label>
-        <label><input type="checkbox" checked value="encerrados"> B2B Encerrados</label>
-        <label><input type="checkbox" checked value="repetidos"> B2B Repetidos</label>
-        <label><input type="checkbox" checked value="rede"> Rede</label>
-        <label><input type="checkbox" checked value="combustiveis"> Combustíveis</label>
-        <label><input type="checkbox" checked value="ofs"> Produtividade OFS</label>
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Mês</label>
+            <select id="filter-abertos-mes" onchange="applyFilters('abertos')">
+              <option>Todos</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Cluster</label>
+            <select id="filter-abertos-cluster" onchange="applyFilters('abertos')">
+              <option>Todos</option>
+              <option>MA CAP</option>
+              <option>MA INT</option>
+              <option>PI</option>
+              <option>NORTE</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>MOP/EPS</label>
+            <select id="filter-abertos-mop" onchange="applyFilters('abertos')">
+              <option>Todas</option>
+              <option>EPS-SLN</option>
+              <option>MOP GIGA+</option>
+              <option>EPS-ADX</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="metric-cards" style="margin-bottom: 1.5rem;">
+          <div class="metric-card">
+            <div class="metric-label">Total Abertos</div>
+            <div class="metric-value" id="abertos-total">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Dentro SLA</div>
+            <div class="metric-value" id="abertos-sla">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">SLA Violado</div>
+            <div class="metric-value" id="abertos-violado">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Idade Média</div>
+            <div class="metric-value" id="abertos-idade">—</div>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Cluster</th>
+                <th>MOP/EPS</th>
+                <th>Data Abertura</th>
+                <th>Horas Decorridas</th>
+                <th>Faixa SLA</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="abertos-table-body">
+              <tr><td colspan="8" style="text-align: center; padding: 2rem; color: #999;">Carregue a base B2B Abertos</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-      <button class="btn accent" onclick="App.genReport()">Gerar relatório</button>
-      <p class="sub" style="margin-top:10px">Exporta um resumo HTML imprimível (PDF via Ctrl+P). Versão executiva PDF/PPTX é gerada server-side com ReportLab.</p>
     </div>
-  </section>
 
-  <!-- ACESSO -->
-  <section class="tabpane" data-pane="acesso">
-    <div class="pane-head"><h2>Acesso &amp; Modais</h2><span class="sub">usuários · backup · chamado manual · cadastro de frota</span></div>
-    <div class="grid g-3">
-      <div class="card"><h3>Usuários do painel</h3><p class="sub" style="margin-bottom:10px">Listar e criar acessos.</p><button class="btn" onclick="App.openModal('mUsers')">Gerenciar</button></div>
-      <div class="card"><h3>Backup Google Sheets</h3><p class="sub" style="margin-bottom:10px">URL Apps Script · salvar automático.</p><button class="btn" onclick="App.openModal('mBackup')">Configurar</button></div>
-      <div class="card"><h3>Adicionar chamado manual</h3><p class="sub" style="margin-bottom:10px">MOP/EPS automático por cidade/UF.</p><button class="btn" onclick="App.openModal('mManual')">Adicionar</button></div>
-      <div class="card"><h3>Cadastrar veículo / condutor</h3><p class="sub" style="margin-bottom:10px">Registro PLACAS · superior/coordenador.</p><button class="btn" onclick="App.openModal('mVeiculo')">Cadastrar</button></div>
-      <div class="card"><h3>Técnicos OFS</h3><p class="sub" style="margin-bottom:10px">Gerenciar equipe de campo.</p><button class="btn" onclick="App.openModal('mTec')">Gerenciar</button></div>
-      <div class="card"><h3>Tema</h3><p class="sub" style="margin-bottom:10px">Claro / escuro (persistente).</p><button class="btn" onclick="App.toggleTheme()">Alternar tema</button></div>
+    <!-- B2B ENCERRADOS -->
+    <div id="b2b-encerrados" class="tab-content">
+      <div class="panel">
+        <h2>Chamados Encerrados</h2>
+        <p style="color: #666; margin-bottom: 1.5rem;">Período, cluster, causa raiz, semana e indicadores históricos</p>
+
+        <div id="b2b-encerrados-msg"></div>
+
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Período (Início)</label>
+            <input type="date" id="filter-encerrados-inicio" onchange="applyFilters('encerrados')">
+          </div>
+          <div class="filter-group">
+            <label>Período (Fim)</label>
+            <input type="date" id="filter-encerrados-fim" onchange="applyFilters('encerrados')">
+          </div>
+          <div class="filter-group">
+            <label>Cluster</label>
+            <select id="filter-encerrados-cluster" onchange="applyFilters('encerrados')">
+              <option>Todos</option>
+              <option>MA CAP</option>
+              <option>MA INT</option>
+              <option>PI</option>
+              <option>NORTE</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="metric-cards" style="margin-bottom: 1.5rem;">
+          <div class="metric-card">
+            <div class="metric-label">Total Encerrados</div>
+            <div class="metric-value" id="encerrados-total">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Taxa Prazo %</div>
+            <div class="metric-value" id="encerrados-prazo">—</div>
+            <div class="metric-status" id="encerrados-prazo-status"></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Taxa Outlier %</div>
+            <div class="metric-value" id="encerrados-outlier">—</div>
+            <div class="metric-status" id="encerrados-outlier-status"></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Tempo Médio</div>
+            <div class="metric-value" id="encerrados-tempo">—</div>
+          </div>
+        </div>
+
+        <h3>Tabela de Encerrados</h3>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Protocolo</th>
+                <th>Cliente</th>
+                <th>Cluster</th>
+                <th>Tempo (h)</th>
+                <th>Faixa SLA</th>
+                <th>Prazo</th>
+                <th>Outlier</th>
+                <th>Causa Raiz</th>
+                <th>Semana</th>
+              </tr>
+            </thead>
+            <tbody id="encerrados-table-body">
+              <tr><td colspan="9" style="text-align: center; padding: 2rem; color: #999;">Carregue a base B2B Encerrados</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Top 5 Causas Raiz</h3>
+        <div class="chart-container">
+          <canvas id="encerrados-causas-chart"></canvas>
+        </div>
+      </div>
     </div>
-  </section>
 
-  <footer>© 2026 · MCLL Monitoramento B2B · Wanderson Marcellus Penha Costa</footer>
-</main>
-</div>
+    <!-- REDE -->
+    <div id="rede" class="tab-content">
+      <div class="panel">
+        <h2>Painel de Rede</h2>
+        <p style="color: #666; margin-bottom: 1.5rem;">Metas: ≥85% prazo · ≤4,9% outlier · TME ≤6,0h</p>
 
-<!-- ===================== MODAIS ===================== -->
-<div class="modal-bg" id="mAporte"><div class="modal"><h3>Registrar aporte</h3>
-  <div class="field"><label>Valor (R$)</label><input id="ap-val" type="number" class="input" style="width:100%"></div>
-  <div class="field"><label>Descrição</label><input id="ap-desc" class="input" style="width:100%"></div>
-  <button class="btn accent" onclick="App.addMov('aporte')">Salvar</button> <button class="btn ghost" onclick="App.closeModal()">Cancelar</button>
-</div></div>
-<div class="modal-bg" id="mRetirada"><div class="modal"><h3>Registrar retirada</h3>
-  <div class="field"><label>Valor (R$)</label><input id="rt-val" type="number" class="input" style="width:100%"></div>
-  <div class="field"><label>Descrição</label><input id="rt-desc" class="input" style="width:100%"></div>
-  <button class="btn accent" onclick="App.addMov('retirada')">Salvar</button> <button class="btn ghost" onclick="App.closeModal()">Cancelar</button>
-</div></div>
-<div class="modal-bg" id="mManual"><div class="modal"><h3>Adicionar chamado manual</h3>
-  <div class="field"><label>ID / Protocolo</label><input id="mn-id" class="input" style="width:100%"></div>
-  <div class="field"><label>Cliente</label><input id="mn-cli" class="input" style="width:100%"></div>
-  <div class="grid g-2"><div class="field"><label>UF</label><input id="mn-uf" class="input" style="width:100%"></div><div class="field"><label>Cidade</label><input id="mn-cid" class="input" style="width:100%"></div></div>
-  <div class="field"><label>Substatus</label><input id="mn-sub" class="input" style="width:100%"></div>
-  <p class="sub" style="margin-bottom:10px">Cluster e MOP/EPS são inferidos por cidade/UF.</p>
-  <button class="btn accent" onclick="App.addManual()">Adicionar</button> <button class="btn ghost" onclick="App.closeModal()">Cancelar</button>
-</div></div>
-<div class="modal-bg" id="mVeiculo"><div class="modal"><h3>Cadastrar veículo / condutor</h3>
-  <div class="field"><label>Placa</label><input id="vc-placa" class="input" style="width:100%"></div>
-  <div class="field"><label>Condutor</label><input id="vc-cond" class="input" style="width:100%"></div>
-  <div class="field"><label>Superior</label><input id="vc-sup" class="input" style="width:100%"></div>
-  <button class="btn accent" onclick="App.addVeiculo()">Cadastrar</button> <button class="btn ghost" onclick="App.closeModal()">Cancelar</button>
-</div></div>
-<div class="modal-bg" id="mBackup"><div class="modal"><h3>Backup Google Sheets</h3>
-  <div class="field"><label>URL do Apps Script (Web App)</label><input id="bk-url" class="input" style="width:100%" placeholder="https://script.google.com/.../exec"></div>
-  <label style="display:block;margin-bottom:12px"><input type="checkbox" id="bk-auto"> Salvar automaticamente ao atualizar dados</label>
-  <button class="btn accent" onclick="App.saveBackupCfg()">Salvar config</button> <button class="btn" onclick="App.backupNow()">Enviar agora</button>
-</div></div>
-<div class="modal-bg" id="mWaUrl"><div class="modal"><h3>URL do monitor WhatsApp</h3>
-  <div class="field"><label>URL pública (Railway)</label><input id="wa-url-in" class="input" style="width:100%" placeholder="https://...up.railway.app"></div>
-  <button class="btn accent" onclick="App.saveWaUrl()">Salvar</button> <button class="btn ghost" onclick="App.closeModal()">Cancelar</button>
-</div></div>
-<div class="modal-bg" id="mUsers"><div class="modal"><h3>Usuários do painel</h3><div id="users-list" class="tbl-wrap" style="margin-bottom:12px"></div>
-  <div class="grid g-2"><div class="field"><label>Usuário</label><input id="us-u" class="input" style="width:100%"></div><div class="field"><label>Senha</label><input id="us-p" class="input" style="width:100%"></div></div>
-  <button class="btn accent" onclick="App.addUser()">Criar</button> <button class="btn ghost" onclick="App.closeModal()">Fechar</button>
-</div></div>
-<div class="modal-bg" id="mTec"><div class="modal"><h3>Técnicos OFS</h3>
-  <div class="field"><label>Nome do técnico</label><input id="tc-nome" class="input" style="width:100%"></div>
-  <div class="field"><label>Cluster</label><input id="tc-cluster" class="input" style="width:100%"></div>
-  <button class="btn accent" onclick="App.addTec()">Adicionar</button> <button class="btn ghost" onclick="App.closeModal()">Fechar</button>
-</div></div>
+        <div id="rede-msg"></div>
 
-<div class="toast" id="toast"></div>
+        <div class="cluster-buttons">
+          <button class="cluster-btn active" onclick="filterCluster('rede', 'Todos')">Todos</button>
+          <button class="cluster-btn" onclick="filterCluster('rede', 'MA CAP')">MA CAP</button>
+          <button class="cluster-btn" onclick="filterCluster('rede', 'MA INT')">MA INT</button>
+          <button class="cluster-btn" onclick="filterCluster('rede', 'PI')">PI</button>
+          <button class="cluster-btn" onclick="filterCluster('rede', 'NORTE')">NORTE</button>
+        </div>
 
-<script>
-/* ============================================================
-   MOTOR - Painel Jarvis - Marcellus
-   ============================================================ */
+        <div class="metric-cards" style="margin-bottom: 1.5rem;">
+          <div class="metric-card">
+            <div class="metric-label">Taxa Prazo</div>
+            <div class="metric-value" id="rede-prazo">—</div>
+            <div class="metric-status" id="rede-prazo-status"></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Taxa Outlier</div>
+            <div class="metric-value" id="rede-outlier">—</div>
+            <div class="metric-status" id="rede-outlier-status"></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">TME (h)</div>
+            <div class="metric-value" id="rede-tme">—</div>
+            <div class="metric-status" id="rede-tme-status"></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">TMR (h)</div>
+            <div class="metric-value" id="rede-tmr">—</div>
+          </div>
+        </div>
 
-/* ---------- Utilidades ---------- */
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const BRL=n=>'R$ '+(n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-const PCT=n=>(n||0).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
-function fmtDate(d){if(!d)return'';const x=(d instanceof Date)?d:new Date(d);if(isNaN(x))return String(d);
-  const p=n=>String(n).padStart(2,'0');return `${p(x.getDate())}/${p(x.getMonth()+1)}/${x.getFullYear()} ${p(x.getHours())}:${p(x.getMinutes())}:${p(x.getSeconds())}`;}
-function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);}
-function statusClass(v,t,inv){if(v==null)return'neutral';const ok=inv?v<=t:v>=t;const near=inv?v<=t*1.12:v>=t*0.92;return ok?'ok':near?'warn':'crit';}
+        <h3>Performance por Cluster</h3>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Cluster</th>
+                <th>Qtd</th>
+                <th>Prazo %</th>
+                <th>Outlier %</th>
+                <th>TME</th>
+                <th>TMR</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="rede-table-body">
+              <tr><td colspan="7" style="text-align: center; padding: 2rem; color: #999;">Carregue a base de Rede</td></tr>
+            </tbody>
+          </table>
+        </div>
 
-/* ---------- Modelo de domínio: clusters / MOP-EPS / SLA ----------
-   Mapa autoritativo de Cobertura por Região (referência MCLL do painel):
-   MA CAP = São Luís · Paço do Lumiar · São José de Ribamar        -> EPS-SLN MA
-   MA INT = demais cidades do MA                                    -> MOP GIGA+ MA
-   PI CAP = Teresina | PI INT = demais do PI                        -> MOP GIGA+ PI
-   PA CAP = Belém · Ananindeua | PA INT = demais do PA              -> EPS-SLN PA
-   AP/AM  = todas de AP e AM + Santarém-PA + Almeirim-PA            -> EPS-ADX
-*/
-function normaliza(s){return (s||'').toString().replace(/\u00a0/g,' ').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
-const CID_MA_CAP=['SAO LUIS','PACO DO LUMIAR','SAO JOSE DE RIBAMAR'];
-const CID_PA_CAP=['BELEM','ANANINDEUA'];
-const CID_ADX_PA=['SANTAREM','ALMEIRIM']; // exceções do PA que vão para AP/AM (ADX)
-function clusterDe(uf,cidade){
-  uf=normaliza(uf);const c=normaliza(cidade);
-  if(uf==='AM'||uf==='AP')return'AM/AP';
-  if(uf==='MA')return CID_MA_CAP.includes(c)?'MA CAP':'MA INT';
-  if(uf==='PI')return c==='TERESINA'?'PI CAP':'PI INT';
-  if(uf==='PA'){ if(CID_ADX_PA.includes(c))return'AM/AP'; return CID_PA_CAP.includes(c)?'PA CAP':'PA INT'; }
-  return uf||'-';
-}
-function mopEps(cluster){
-  const map={'MA CAP':'EPS-SLN MA','MA INT':'MOP GIGA+ MA','PI CAP':'MOP GIGA+ PI','PI INT':'MOP GIGA+ PI',
-             'PA CAP':'EPS-SLN PA','PA INT':'EPS-SLN PA','AM/AP':'EPS-ADX'};
-  return map[cluster]||'-';
-}
-// agrupamento do Painel Rede: NORTE = PA + AM/AP ; PI = PI CAP + PI INT
-function clusterRede(cl){ if(cl==='PA CAP'||cl==='PA INT'||cl==='AM/AP')return'NORTE'; if(cl==='PI CAP'||cl==='PI INT')return'PI'; return cl; }
+        <h3>Evolução de Prazo</h3>
+        <div class="chart-container">
+          <canvas id="rede-chart"></canvas>
+        </div>
+      </div>
+    </div>
 
-/* SLA comercial: Seg-Sex 08:00-18:00 (10h úteis/dia), exclui fim de semana.
-   Replica a regra NETWORKDAYS.INTL usada desde a origem do projeto em Excel. */
-function slaComercial(inicio, fim){
-  if(!inicio)return null; const ini=new Date(inicio), end=fim?new Date(fim):new Date();
-  if(isNaN(ini)||end<=ini)return 0;
-  const H0=8,H1=18; let horas=0; const cur=new Date(ini);
-  while(cur<end){
-    const dow=cur.getDay();
-    if(dow!==0&&dow!==6){
-      const ds=new Date(cur); ds.setHours(H0,0,0,0);
-      const de=new Date(cur); de.setHours(H1,0,0,0);
-      const a=cur<ds?ds:cur; const b=end<de?end:de;
-      if(b>a) horas+=(b-a)/36e5;
+    <!-- OFS -->
+    <div id="ofs" class="tab-content">
+      <div class="panel">
+        <h2>Produtividade OFS</h2>
+        <p style="color: #666; margin-bottom: 1.5rem;">Técnicos, ordens, alertas e ranking (exclui Almoço, Checklist)</p>
+
+        <div id="ofs-msg"></div>
+
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>UF</label>
+            <select id="filter-ofs-uf" onchange="applyFilters('ofs')">
+              <option>Todos</option>
+              <option>MA</option>
+              <option>PA</option>
+              <option>PI</option>
+              <option>AP</option>
+              <option>AM</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="metric-cards" style="margin-bottom: 1.5rem;">
+          <div class="metric-card">
+            <div class="metric-label">Total Técnicos</div>
+            <div class="metric-value" id="ofs-total-tecnicos">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Total Atividades</div>
+            <div class="metric-value" id="ofs-total-atividades">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Taxa Média</div>
+            <div class="metric-value" id="ofs-taxa-media">—</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Alertas</div>
+            <div class="metric-value" id="ofs-alertas">0</div>
+          </div>
+        </div>
+
+        <h3>Ranking de Produtividade</h3>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Técnico</th>
+                <th>UF</th>
+                <th>Total</th>
+                <th>Concluídas</th>
+                <th>Taxa %</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="ofs-table-body">
+              <tr><td colspan="6" style="text-align: center; padding: 2rem; color: #999;">Carregue a base OFS</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Distribuição de Atividades</h3>
+        <div class="chart-container">
+          <canvas id="ofs-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMBUSTÍVEIS -->
+    <div id="combustivel" class="tab-content">
+      <div class="panel">
+        <h2>Consumo de Combustíveis</h2>
+        <p style="color: #666; margin-bottom: 1.5rem;">Saldo Alelo, frota, consumo e análise por condutor (somente transações Aprovadas)</p>
+
+        <div id="combustivel-msg"></div>
+
+        <div class="metric-cards" style="margin-bottom: 1.5rem;">
+          <div class="metric-card">
+            <div class="metric-label">Saldo Alelo</div>
+            <div class="metric-value" id="combustivel-saldo">R$ 0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Total Frotas</div>
+            <div class="metric-value" id="combustivel-frotas">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Consumo Total</div>
+            <div class="metric-value" id="combustivel-consumo">R$ 0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Transações</div>
+            <div class="metric-value" id="combustivel-transacoes">0</div>
+          </div>
+        </div>
+
+        <h3>Top 10 Condutores por Consumo</h3>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Condutor</th>
+                <th>Placa</th>
+                <th>Consumo Total</th>
+                <th>Qtd Transações</th>
+                <th>Média Transação</th>
+              </tr>
+            </thead>
+            <tbody id="combustivel-table-body">
+              <tr><td colspan="5" style="text-align: center; padding: 2rem; color: #999;">Carregue a base Alelo</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Consumo por Tipo de Combustível</h3>
+        <div class="chart-container">
+          <canvas id="combustivel-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPETIDOS -->
+    <div id="repetidos" class="tab-content">
+      <div class="panel">
+        <h2>Chamados Repetidos</h2>
+        <p style="color: #666; margin-bottom: 1.5rem;">Clientes com reincidência, causas dominantes e evolução</p>
+
+        <div id="repetidos-msg"></div>
+
+        <div class="metric-cards" style="margin-bottom: 1.5rem;">
+          <div class="metric-card">
+            <div class="metric-label">Total Repetidos</div>
+            <div class="metric-value" id="repetidos-total">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Clientes Reincidentes</div>
+            <div class="metric-value" id="repetidos-clientes">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Ofensores Nível 1</div>
+            <div class="metric-value" id="repetidos-ofensores">0</div>
+          </div>
+        </div>
+
+        <h3>Top Clientes Reincidentes</h3>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Qtd Repetidas</th>
+                <th>Cluster</th>
+                <th>Causa Principal</th>
+              </tr>
+            </thead>
+            <tbody id="repetidos-table-body">
+              <tr><td colspan="4" style="text-align: center; padding: 2rem; color: #999;">Carregue a base B2B Encerrados</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Causas de Repetição</h3>
+        <div class="chart-container">
+          <canvas id="repetidos-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- DADOS -->
+    <div id="dados" class="tab-content">
+      <div class="panel">
+        <h2>Central de Dados</h2>
+        <p style="color: #666; margin-bottom: 1.5rem;">Status das bases carregadas, validações e estatísticas</p>
+
+        <h3>Resumo das Bases</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Base</th>
+              <th>Status</th>
+              <th>Registros</th>
+              <th>Últimas Linhas Carregadas</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>B2B Abertos</td>
+              <td id="status-abertos"><span style="color: #999;">Não carregado</span></td>
+              <td id="qtd-abertos">0</td>
+              <td id="data-abertos">—</td>
+            </tr>
+            <tr>
+              <td>B2B Encerrados</td>
+              <td id="status-encerrados"><span style="color: #999;">Não carregado</span></td>
+              <td id="qtd-encerrados">0</td>
+              <td id="data-encerrados">—</td>
+            </tr>
+            <tr>
+              <td>Rede</td>
+              <td id="status-rede"><span style="color: #999;">Não carregado</span></td>
+              <td id="qtd-rede">0</td>
+              <td id="data-rede">—</td>
+            </tr>
+            <tr>
+              <td>OFS</td>
+              <td id="status-ofs"><span style="color: #999;">Não carregado</span></td>
+              <td id="qtd-ofs">0</td>
+              <td id="data-ofs">—</td>
+            </tr>
+            <tr>
+              <td>Alelo</td>
+              <td id="status-alelo"><span style="color: #999;">Não carregado</span></td>
+              <td id="qtd-alelo">0</td>
+              <td id="data-alelo">—</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 style="margin-top: 2rem;">Referência de Cálculos</h3>
+        <div style="background: #f9f9f9; padding: 1rem; border-radius: 6px; font-size: 13px; line-height: 1.8;">
+          <p><strong>Taxa Prazo (SLA):</strong> % chamados com tempo ≤ SLA_Horas. Meta: ≥85%</p>
+          <p><strong>Taxa Outlier:</strong> % chamados com tempo > 24h. Meta: ≤4.9%</p>
+          <p><strong>Cluster:</strong> Determinado por (UF + Cidade) → MA CAP, MA INT, PI, NORTE</p>
+          <p><strong>MOP/EPS:</strong> EPS-SLN (MA CAP, PA CAP/INT) | MOP GIGA+ (MA INT, PI) | EPS-ADX (AP, AM, PA)</p>
+          <p><strong>Semana ISO:</strong> ISOWEEKNUM conforme padrão ISO 8601</p>
+          <p><strong>OFS Produtivo:</strong> Exclui Almoço, Checklist, Descanso</p>
+          <p><strong>Alelo Válido:</strong> Somente transações com Status = "Aprovada"</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ============= ESTRUTURA DE DADOS =============
+    let globalData = {
+      abertos: [],
+      encerrados: [],
+      rede: [],
+      ofs: [],
+      alelo: [],
+      filtros: {
+        abertos: { mes: 'Todos', cluster: 'Todos', mop: 'Todas' },
+        encerrados: { inicio: null, fim: null, cluster: 'Todos' },
+        ofs: { uf: 'Todos' },
+        rede: { cluster: 'Todos' }
+      }
+    };
+
+    let charts = {};
+
+    const DB = {_db:null,
+      open(){return new Promise((res,rej)=>{const r=indexedDB.open('atrix_jarvis',1);
+        r.onupgradeneeded=e=>{const d=e.target.result;['abertos','encerrados','repetidos','ofs','transacoes','frota','movimentos','config'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s,{keyPath:'k'});});};
+        r.onsuccess=e=>{this._db=e.target.result;res();};r.onerror=e=>rej(e);});},
+      get(store,k){return new Promise(res=>{try{const t=this._db.transaction(store,'readonly');const rq=t.objectStore(store).get(k);rq.onsuccess=()=>res(rq.result?rq.result.v:null);rq.onerror=()=>res(null);}catch(e){res(null);}});},
+      set(store,k,v){return new Promise(res=>{try{const t=this._db.transaction(store,'readwrite');t.objectStore(store).put({k,v});t.oncomplete=()=>res();}catch(e){res();}});},
+      del(store,k){return new Promise(res=>{try{const t=this._db.transaction(store,'readwrite');t.objectStore(store).delete(k);t.oncomplete=()=>res();}catch(e){res();}});}
+    };
+
+    function saveSession() {
+      try { localStorage.setItem('jarvis_mcll_completo', JSON.stringify(globalData)); } catch(e) {}
     }
-    cur.setDate(cur.getDate()+1); cur.setHours(0,0,0,0);
-  }
-  return Math.round(horas*10)/10;
-}
-// faixas de aging para Abertos (regra das 8h sobre SLA comercial)
-function faixaSLA(horas){
-  if(horas==null)return{label:'-',cls:'neutral'};
-  if(horas<4)  return{label:'Até 4h',cls:'ok'};
-  if(horas<8)  return{label:'4h a 8h',cls:'ok'};
-  if(horas<12) return{label:'8h a 12h',cls:'warn'};
-  if(horas<=24)return{label:'12h a 24h',cls:'warn'};
-  return{label:'Maior que 24h',cls:'crit'};
-}
-// metas (Painel Rede do site): >=85% prazo · <=4,9% outlier +24h · TME <=6,0h
-const METAS={ sla8h:85, prazo:85, outlier24h:4.9, tme:6.0 };
 
-/* ---------- IndexedDB ---------- */
-const DB={_db:null,
-  open(){return new Promise((res,rej)=>{const r=indexedDB.open('atrix_jarvis',1);
-    r.onupgradeneeded=e=>{const d=e.target.result;['abertos','encerrados','repetidos','ofs','transacoes','frota','movimentos','config'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s,{keyPath:'k'});});};
-    r.onsuccess=e=>{this._db=e.target.result;res();}; r.onerror=e=>rej(e);});},
-  set(store,k,v){return new Promise((res,rej)=>{try{const t=this._db.transaction(store,'readwrite');t.objectStore(store).put({k,v});t.oncomplete=()=>res();t.onerror=rej;}catch(e){res();}});},
-  get(store,k){return new Promise(res=>{try{const t=this._db.transaction(store,'readonly');const rq=t.objectStore(store).get(k);rq.onsuccess=()=>res(rq.result?rq.result.v:null);rq.onerror=()=>res(null);}catch(e){res(null);}});},
-  del(store,k){return new Promise(res=>{try{const t=this._db.transaction(store,'readwrite');t.objectStore(store).delete(k);t.oncomplete=()=>res();}catch(e){res();}});}
-};
-
-/* ---------- Estado ---------- */
-const ST={abertos:[],encerrados:[],repetidos:[],ofs:[],transacoes:[],frota:[],movimentos:[],filtroCluster:'',filtroFaixa:''};
-let charts={};
-function chart(id,cfg){if(charts[id])charts[id].destroy();const el=document.getElementById(id);if(!el)return;charts[id]=new Chart(el,cfg);}
-function gridColor(){return getComputedStyle(document.body).getPropertyValue('--grid');}
-function txtColor(){return getComputedStyle(document.body).getPropertyValue('--text-muted');}
-function cssv(n){return getComputedStyle(document.body).getPropertyValue(n).trim();}
-function statusPalette(){return[cssv('--ok'),cssv('--warn'),cssv('--crit'),cssv('--neutral'),cssv('--accent')];}
-
-/* ---------- Leitura genérica de XLSX ---------- */
-function readXLSX(file,sheetPref){return new Promise((res,rej)=>{const r=new FileReader();
-  r.onload=e=>{try{const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
-    let sn=wb.SheetNames.find(n=>sheetPref&&n.toUpperCase().includes(sheetPref))||wb.SheetNames[0];
-    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{defval:''});res(rows);
-  }catch(err){rej(err);}};r.onerror=rej;r.readAsArrayBuffer(file);});}
-// localizador de coluna tolerante a acento/caixa
-function col(row,...names){const keys=Object.keys(row);for(const n of names){const k=keys.find(k=>normaliza(k)===normaliza(n));if(k)return row[k];}
-  for(const n of names){const k=keys.find(k=>normaliza(k).includes(normaliza(n)));if(k)return row[k];}return'';}
-
-/* ============================================================
-   APP
-   ============================================================ */
-const App={
-  /* ---- auth ---- */
-  async login(){
-    const u=$('#lg-user').value.trim(),p=$('#lg-pass').value;
-    const users=await DB.get('config','users')||[{u:'mcll',p:'mcll'},{u:'marcellus',p:'jarvis'}];
-    const ok=users.find(x=>x.u===u&&x.p===p);
-    if(ok){sessionStorage.setItem('atrix_auth','1');$('#login').style.display='none';$('#app').style.display='block';}
-    else{$('#lg-err').textContent='Usuário ou senha inválidos.';}
-  },
-  /* ---- tema ---- */
-  toggleTheme(){const cur=document.documentElement.getAttribute('data-theme');const next=cur==='dark'?'light':'dark';
-    document.documentElement.setAttribute('data-theme',next);localStorage.setItem('atrix-theme',next);
-    $('#themeBtn').textContent=next==='dark'?'Lua':'Sol';this.repaintCharts();},
-  initTheme(){const saved=localStorage.getItem('atrix-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
-    document.documentElement.setAttribute('data-theme',saved);$('#themeBtn').textContent=saved==='dark'?'Lua':'Sol';},
-  repaintCharts(){setTimeout(()=>{this.renderAbertos();this.renderEncerrados();this.renderRede();this.renderOFS();ATRIX_CONSUMO.render();},60);},
-
-  /* ---- navegação ---- */
-  initTabs(){
-    $$('#tabs button').forEach(b=>b.onclick=()=>{$$('#tabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');
-      $$('.tabpane').forEach(p=>p.classList.toggle('active',p.dataset.pane===b.dataset.tab));});
-    $$('.subtabs button').forEach(b=>b.onclick=()=>{$$('.subtabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');
-      $$('.subpane').forEach(p=>p.classList.toggle('active',p.dataset.subpane===b.dataset.sub));});
-  },
-
-  /* ---- modais ---- */
-  openModal(id){$('#'+id).classList.add('show');if(id==='mUsers')this.renderUsers();},
-  closeModal(){$$('.modal-bg').forEach(m=>m.classList.remove('show'));},
-
-  /* ---- contadores ---- */
-  refreshCounters(){$('#c-ab').textContent=ST.abertos.length;$('#c-en').textContent=ST.encerrados.length;$('#c-rp').textContent=ST.repetidos.length;
-    $('#wa-cobr').textContent=ST.abertos.length;$('#wa-enc').textContent=ST.encerrados.length;},
-
-  /* ---- export PNG ---- */
-  copyPNG(id){const el=document.getElementById(id);if(!el)return;
-    html2canvas(el,{backgroundColor:cssv('--surface'),scale:2}).then(cv=>{cv.toBlob(b=>{
-      try{navigator.clipboard.write([new ClipboardItem({'image/png':b})]);toast('Tabela copiada como imagem');}
-      catch(e){const a=document.createElement('a');a.href=cv.toDataURL();a.download=id+'.png';a.click();toast('PNG baixado');}});});},
-
-  /* ================= ABERTOS ================= */
-  async importAbertos(file){
-    const rows=await readXLSX(file,'PLANILHA1');
-    ST.abertos=rows.map(r=>{
-      const uf=col(r,'UF'), cid=col(r,'Cidade','Municipio');
-      const cl=clusterDe(uf,cid);
-      // SLA comercial a partir da Abertura do Ticket (Seg-Sex 08-18h)
-      const ab=col(r,'Abertura do Ticket','Abertura','data_abertura');
-      let abertura=null;
-      if(ab instanceof Date) abertura=ab;
-      else if(typeof ab==='number') abertura=new Date(Math.round((ab-25569)*86400*1000));
-      else if(ab){ const d=new Date(ab); if(!isNaN(d)) abertura=d; }
-      const horas=abertura?slaComercial(abertura,new Date()):null;
-      const f=faixaSLA(horas);
-      const tempoDias=parseFloat(col(r,'Tempo','tempo','dias'))||null;
-      return{ id:col(r,'IDTicket','ID','ticket_id','protocolo','Protocolo'),
-        cliente:col(r,'Cliente','razao'),
-        clienteFinal:col(r,'Cliente Final','cliente_final'),
-        tipo:col(r,'Tipo de Atendimento','tipo'),
-        departamento:col(r,'Departamento'),
-        uf, cidade:cid, cluster:cl, mop:mopEps(cl),
-        abertura, tempoDias, horas, faixa:f.label, faixaCls:f.cls,
-        status:col(r,'Status'), substatus:col(r,'Substatus','status') };
-    }).filter(r=>r.id);
-    await DB.set('abertos','data',ST.abertos);this.afterData('abertos');
-  },
-  renderAbertos(){
-    if(!ST.abertos.length){$('#abertos-empty').style.display='';$('#abertos-content').style.display='none';return;}
-    $('#abertos-empty').style.display='none';$('#abertos-content').style.display='';
-    let d=ST.abertos.filter(r=>(!ST.filtroCluster||r.cluster===ST.filtroCluster)&&(!ST.filtroFaixa||r.faixa===ST.filtroFaixa));
-    // KPIs
-    const total=d.length;
-    const dentro=d.filter(r=>r.horas!=null&&r.horas<8).length;
-    const pctOk=total?dentro/total*100:0;
-    const out24=d.filter(r=>r.horas!=null&&r.horas>24).length;
-    const pctOut=total?out24/total*100:0;
-    $('#ab-kpis').innerHTML=`
-      ${kpi('Chamados abertos',total,'',  'neutral')}
-      ${kpi('Dentro de 8h',PCT(pctOk),'meta >= '+METAS.sla8h+'%',statusClass(pctOk,METAS.sla8h))}
-      ${kpi('Outlier +24h',PCT(pctOut),'limite <= '+METAS.outlier24h+'%',statusClass(pctOut,METAS.outlier24h,true))}
-      ${kpi('Críticos +24h',out24,'em aberto',out24>0?'crit':'ok')}`;
-    // filtros (chips de cluster)
-    const clusters=[...new Set(ST.abertos.map(r=>r.cluster))].sort();
-    $('#ab-filters').innerHTML='<span class="sub" style="margin-right:4px">Cluster:</span>'+
-      `<button class="chip ${!ST.filtroCluster?'active':''}" onclick="App.setFilter('','cluster')">Todos</button>`+
-      clusters.map(c=>`<button class="chip ${ST.filtroCluster===c?'active':''}" onclick="App.setFilter('${c}','cluster')">${c}</button>`).join('');
-    // charts
-    const faixas=['Até 4h','4h a 8h','8h a 12h','12h a 24h','Maior que 24h'];
-    const fcount=faixas.map(f=>d.filter(r=>r.faixa===f).length);
-    chart('ch-ab-faixa',{type:'bar',data:{labels:faixas,datasets:[{data:fcount,backgroundColor:[cssv('--ok'),cssv('--ok'),cssv('--warn'),cssv('--warn'),cssv('--crit')],borderRadius:5}]},options:baseOpt(true)});
-    const ccount={};d.forEach(r=>ccount[r.cluster]=(ccount[r.cluster]||0)+1);
-    chart('ch-ab-cluster',{type:'bar',data:{labels:Object.keys(ccount),datasets:[{data:Object.values(ccount),backgroundColor:cssv('--accent'),borderRadius:5}]},options:baseOpt(true)});
-    // tabela
-    $('#ab-table').innerHTML=thead(['Protocolo','Cliente','UF','Cidade','Cluster','MOP/EPS','Aging','Faixa SLA','Substatus'])+
-      '<tbody>'+d.slice(0,400).map(r=>`<tr>
-        <td class="mono">${r.id}</td><td class="ellip">${r.cliente}</td><td>${r.uf}</td><td class="ellip">${r.cidade}</td>
-        <td>${r.cluster}</td><td>${r.mop}</td><td class="mono">${r.horas!=null?r.horas.toFixed(1)+'h':'-'}</td>
-        <td><span class="pill ${r.faixaCls}">${r.faixa}</span></td><td class="ellip">${r.substatus}</td></tr>`).join('')+'</tbody>';
-  },
-  setFilter(v,kind){if(kind==='cluster')ST.filtroCluster=v;else ST.filtroFaixa=v;this.renderAbertos();},
-
-  /* ================= ENCERRADOS ================= */
-  // Classificação SLA pelas metas: Prazo <=8h · Fora 8h01-24h · Outlier >24h (sobre tempo_ccs / col AG)
-  async importEncerrados(file){
-    const rows=await readXLSX(file,'');
-    ST.encerrados=rows.map(r=>{
-      const cl=col(r,'cluster','cluster_calc','nova_regional');
-      const uf=col(r,'ufservico','UF'); const cid=col(r,'cidadeservico','Cidade','cidade');
-      const sla=parseFloat(col(r,'tempo_ccs'))||0;           // col AG - SLA em horas
-      const agingTxt=col(r,'aging_ccs','aging');             // col AA - faixa em texto
-      const dentro8h = sla<=8;
-      const foraPrazo = sla>8 && sla<=24;
-      const outlier24h = sla>24;
-      const clusterFinal = clusterDe(uf,cid);  // granular CAP/INT por cidade (col cluster AQ é grossa)
-      const clusterBase = cl;                   // C.xx da base, preservado para referência
-      return{ id:col(r,'protocolo','ticket_id','ID'),            // col B
-        ticket:col(r,'ticket_id'),
-        titulo:col(r,'titulo'),                                  // col C
-        tipo:col(r,'Tipo_Encerramento','tipo_encerramento'),     // col R
-        causaRaiz:col(r,'Causa_Raiz','causa_raiz'),              // col S
-        uf, cidade:cid,                                          // cols X / Y
-        cluster:clusterFinal, clusterBase, clusterRede:clusterRede(clusterFinal),
-        aging:sla, agingTxt,                                     // SLA (AG) + faixa texto (AA)
-        dentro8h, foraPrazo, outlier24h,
-        numplan:col(r,'numplan'),                                // col F
-        clienteId:col(r,'cliente_id'),                           // col J
-        cliente:col(r,'Cliente','cliente'),                      // col K
-        segmento:col(r,'segmento_cliente','segmento'),           // col E
-        semana:col(r,'semana','sem') };                          // col AT
-    }).filter(r=>r.id);
-    // semanas no seletor (S1..S25 ordenadas numericamente)
-    const sems=[...new Set(ST.encerrados.map(r=>r.semana).filter(Boolean))].sort((a,b)=>(parseInt(String(a).replace(/\D/g,''))||0)-(parseInt(String(b).replace(/\D/g,''))||0));
-    $('#en-week').innerHTML='<option value="">Todas as semanas</option>'+sems.map(s=>`<option>${s}</option>`).join('');
-    await DB.set('encerrados','data',ST.encerrados);
-    // Repetidos é balizado nesta mesma base
-    this.derivarRepetidos();
-    this.afterData('encerrados');
-  },
-  renderEncerrados(){
-    if(!ST.encerrados.length){$('#encerrados-empty').style.display='';$('#encerrados-content').style.display='none';return;}
-    $('#encerrados-empty').style.display='none';$('#encerrados-content').style.display='';
-    const w=$('#en-week').value;
-    let d=ST.encerrados.filter(r=>!w||String(r.semana)===String(w));
-    const total=d.length;
-    const prazo=d.filter(r=>r.dentro8h).length;
-    const fora=d.filter(r=>r.foraPrazo).length;
-    const out=d.filter(r=>r.outlier24h).length;
-    const pPrazo=total?prazo/total*100:0, pFora=total?fora/total*100:0, pOut=total?out/total*100:0;
-    const tme=total?d.reduce((s,r)=>s+(r.aging||0),0)/total:0;
-    $('#en-kpis').innerHTML=`
-      ${kpi('Encerrados',total,'',  'neutral')}
-      ${kpi('Dentro do Prazo',PCT(pPrazo),'<= 8h · meta >= '+METAS.prazo+'%',statusClass(pPrazo,METAS.prazo))}
-      ${kpi('Fora do Prazo',PCT(pFora),'8h01 a 24h',pFora>15?'warn':'ok')}
-      ${kpi('Outlier +24h',PCT(pOut),'limite <= '+METAS.outlier24h+'%',statusClass(pOut,METAS.outlier24h,true))}
-      ${kpi('TME',tme.toFixed(1)+'h','meta <= '+METAS.tme+'h',statusClass(tme,METAS.tme,true))}`;
-    // performance por cluster (% dentro do prazo)
-    const cls={};d.forEach(r=>{(cls[r.cluster]=cls[r.cluster]||{t:0,ok:0,out:0}).t++;if(r.dentro8h)cls[r.cluster].ok++;if(r.outlier24h)cls[r.cluster].out++;});
-    const clNames=Object.keys(cls).sort();
-    chart('ch-en-cluster',{type:'bar',data:{labels:clNames,datasets:[{data:clNames.map(c=>cls[c].ok/cls[c].t*100),
-      backgroundColor:clNames.map(c=>{const p=cls[c].ok/cls[c].t*100;return p>=METAS.prazo?cssv('--ok'):p>=METAS.prazo*.92?cssv('--warn'):cssv('--crit');}),borderRadius:5}]},options:baseOpt(true,'%')});
-    // tipo de encerramento (causa)
-    const tipos={};d.forEach(r=>tipos[r.tipo||'-']=(tipos[r.tipo||'-']||0)+1);
-    const tipoSorted=Object.entries(tipos).sort((a,b)=>b[1]-a[1]);
-    chart('ch-en-tipo',{type:'doughnut',data:{labels:tipoSorted.map(x=>x[0]),datasets:[{data:tipoSorted.map(x=>x[1]),backgroundColor:[cssv('--accent'),cssv('--ok'),cssv('--warn'),cssv('--crit'),cssv('--neutral'),'#7C5CFC','#19B6C9','#E0A93B'],borderWidth:0}]},options:donutOpt()});
-    // evolução semanal - % dentro do prazo
-    const sems=[...new Set(ST.encerrados.map(r=>r.semana).filter(Boolean))].sort((a,b)=>(parseInt(String(a).replace(/\D/g,''))||0)-(parseInt(String(b).replace(/\D/g,''))||0));
-    const semOk=sems.map(s=>{const g=ST.encerrados.filter(r=>String(r.semana)===String(s));return g.length?g.filter(r=>r.dentro8h).length/g.length*100:0;});
-    chart('ch-en-semana',{type:'line',data:{labels:sems,datasets:[{label:'% prazo',data:semOk,borderColor:cssv('--accent'),backgroundColor:'transparent',tension:.3,pointRadius:2,fill:false},
-      {label:'meta',data:sems.map(()=>METAS.prazo),borderColor:cssv('--warn'),borderDash:[5,5],pointRadius:0}]},options:baseOpt(false,'%')});
-    // cards por cluster
-    $('#en-cluster-cards').innerHTML=clNames.map(c=>{const p=cls[c].ok/cls[c].t*100;const st=statusClass(p,METAS.prazo);
-      return `<div class="kpi ${st}"><div class="k-label">${c}</div><div class="k-val">${PCT(p)}</div><div class="k-target">${cls[c].ok}/${cls[c].t} no prazo · ${cls[c].out} outlier</div></div>`;}).join('');
-    // tabela operacional com as colunas solicitadas
-    if(!$('#en-table')){
-      const wrap=document.createElement('div');wrap.className='card';wrap.style.marginTop='14px';
-      wrap.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h3 style="margin:0">Chamados encerrados</h3><button class="btn" onclick="App.copyPNG(\'en-table-wrap\')">Copiar tabela (PNG)</button></div><div class="tbl-wrap" id="en-table-wrap"><table id="en-table"></table></div>';
-      $('[data-pane="encerrados"]').appendChild(wrap);
+    function adaptAbertos(rows) {
+      return (rows || []).map(r => ({
+        id: r.id || r.ID || r.ticket,
+        cliente: r.cliente || r.Cliente || '',
+        uf: (r.uf || r.UF || '').toUpperCase(),
+        cidade: r.cidade || r.Cidade || '',
+        dataAbertura: r.dataAbertura || r.abertura || r.Data_Abertura || '',
+        slahoras: r.slahoras || r.SLA_Horas || 24,
+        tecnico: r.tecnico || r.Técnico || '',
+        substatus: r.substatus || r.Substatus || '',
+        cluster: r.cluster || determineCluster(r.uf || r.UF, r.cidade || r.Cidade),
+        mopeps: r.mopeps || r.mop || determineMOPEPS(r.uf || r.UF, r.cidade || r.Cidade),
+        horasDecorridas: Number.isFinite(r.horasDecorridas) ? r.horasDecorridas : Number(r.horas || 0),
+        faixaSLA: r.faixaSLA || r.faixa || 'Não classificado',
+        statusSLA: r.statusSLA || ((r.horas || 0) <= 8 ? 'Dentro SLA' : 'Violado')
+      })).filter(r => r.id);
     }
-    $('#en-table').innerHTML=thead(['Protocolo','Título','Tipo Encerramento','UF','Cidade','Aging','SLA (h)','Classificação','Semana'])+
-      '<tbody>'+d.slice(0,500).map(r=>{const cls=r.dentro8h?'ok':r.outlier24h?'crit':'warn';const lbl=r.dentro8h?'No prazo':r.outlier24h?'Outlier':'Fora prazo';
-        return `<tr><td class="mono">${r.id}</td><td class="ellip">${r.titulo||''}</td><td class="ellip">${r.tipo||''}</td>
-        <td>${r.uf||''}</td><td class="ellip">${r.cidade||''}</td><td><span class="pill ${faixaTxtCls(r.agingTxt)}">${r.agingTxt||'-'}</span></td>
-        <td class="mono">${r.aging.toFixed(1)}</td><td><span class="pill ${cls}">${lbl}</span></td><td>${r.semana||''}</td></tr>`;}).join('')+'</tbody>';
-  },
 
-  /* ================= REPETIDOS (balizado na base Encerrados) =================
-     Reincidência por numplan (col F) e cliente_id (col J). numplan=1 = "sem plano". */
-  async importRepetidos(file){ // aceita a própria base de encerrados
-    if(!ST.encerrados.length){ await this.importEncerrados(file); return; }
-    this.derivarRepetidos(); this.afterData('repetidos');
-  },
-  derivarRepetidos(){
-    const base=ST.encerrados;
-    // contagem por circuito (numplan válido) e por cliente
-    const porPlano={}, porCliente={};
-    base.forEach(r=>{
-      const np=String(r.numplan||'').trim();
-      if(np && np!=='1' && np!=='0') porPlano[np]=(porPlano[np]||0)+1;
-      const ci=String(r.clienteId||'').trim();
-      if(ci) porCliente[ci]=(porCliente[ci]||0)+1;
+    function adaptEncerrados(rows) {
+      return (rows || []).map(r => ({
+        protocolo: r.protocolo || r.id || r.ticket,
+        cliente: r.cliente || '',
+        uf: (r.uf || '').toUpperCase(),
+        cidade: r.cidade || '',
+        dataAbertura: r.dataAbertura || '',
+        dataEncerramento: r.dataEncerramento || '',
+        tempoResolucao: Number(r.tempoResolucao ?? r.aging ?? 0),
+        causaRaiz: r.causaRaiz || r.tipo || 'Não informado',
+        cluster: r.cluster || determineCluster(r.uf, r.cidade),
+        semana: r.semana || '',
+        dentoPrazo: r.dentoPrazo ?? (r.dentro8h ? 1 : 0),
+        outlier: r.outlier ?? (r.outlier24h ? 1 : 0)
+      })).filter(r => r.protocolo);
+    }
+
+    function adaptOFS(rows) {
+      return (rows || []).flatMap(r => {
+        if (r.tec && Number.isFinite(Number(r.total))) {
+          return [{
+            tecnico: r.tec,
+            data: '',
+            tipoAtividade: 'produtiva',
+            status: 'Consolidado',
+            uf: '',
+            grupo: r.cluster || '',
+            isProdutivo: true,
+            isConcluido: Number(r.concl || 0),
+            total: Number(r.total || 0),
+            concluido: Number(r.concl || 0)
+          }];
+        }
+        return [r];
+      });
+    }
+
+    function deriveRedeFromEncerrados(encerrados) {
+      const clusters = {};
+      (encerrados || []).forEach(r => {
+        const key = r.cluster || 'Não classificado';
+        const c = clusters[key] || (clusters[key] = {cluster:key,qtdRegistros:0,tempoResposta:0,tempoResolucao:0,dentoPrazo:0,outlier:0});
+        c.qtdRegistros++;
+        c.tempoResposta += Number(r.tempoResolucao || 0);
+        c.tempoResolucao += Number(r.tempoResolucao || 0);
+        c.dentoPrazo += r.dentoPrazo ? 1 : 0;
+        c.outlier += r.outlier ? 1 : 0;
+      });
+      return Object.values(clusters).map(c => ({
+        ...c,
+        tempoResposta: c.qtdRegistros ? c.tempoResposta / c.qtdRegistros : 0,
+        tempoResolucao: c.qtdRegistros ? c.tempoResolucao / c.qtdRegistros : 0,
+        dentoPrazo: c.qtdRegistros ? c.dentoPrazo / c.qtdRegistros : 0,
+        outlier: c.qtdRegistros ? c.outlier / c.qtdRegistros : 0
+      }));
+    }
+
+    async function loadStoredData() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('jarvis_mcll_completo') || 'null');
+        if (saved) globalData = {...globalData, ...saved, filtros: globalData.filtros};
+      } catch(e) {}
+
+      await DB.open();
+      const [abertos, encerrados, ofs, transacoes] = await Promise.all([
+        DB.get('abertos','data'),
+        DB.get('encerrados','data'),
+        DB.get('ofs','data'),
+        DB.get('transacoes','data')
+      ]);
+
+      if (abertos?.length) globalData.abertos = adaptAbertos(abertos);
+      if (encerrados?.length) {
+        globalData.encerrados = adaptEncerrados(encerrados);
+        globalData.rede = deriveRedeFromEncerrados(globalData.encerrados);
+      }
+      if (ofs?.length) globalData.ofs = adaptOFS(ofs);
+      if (transacoes?.length) globalData.alelo = transacoes.map(r => ({
+        placa: r.placa,
+        condutor: r.sup,
+        valor: Number(r.val || 0),
+        tipoCombustivel: 'Alelo',
+        status: 'Aprovada',
+        isValido: true
+      }));
+
+      refreshAllViews();
+    }
+
+    function refreshAllViews() {
+      if (globalData.abertos.length) updateAbertosDashboard();
+      if (globalData.encerrados.length) {
+        updateEncerradosDashboard();
+        updateRepetidosDashboard();
+      }
+      if (globalData.rede.length) updateRedeDashboard();
+      if (globalData.ofs.length) updateOFSDashboard();
+      if (globalData.alelo.length) updateCombustivelDashboard();
+      updateDashboard();
+      updateDataSummary();
+    }
+
+    // ============= FUNÇÕES DE TAB =============
+    function switchTab(e, tabName) {
+      const contents = document.querySelectorAll('.tab-content');
+      contents.forEach(c => c.classList.remove('active'));
+
+      const buttons = document.querySelectorAll('.tab-button');
+      buttons.forEach(b => b.classList.remove('active'));
+
+      document.getElementById(tabName).classList.add('active');
+      e.target.classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    // ============= PROCESSAMENTO DE ARQUIVO =============
+    function processFile(tipo) {
+      const fileInput = document.getElementById(`file-${tipo}`);
+      const file = fileInput.files[0];
+
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = e.target.result;
+          const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const rows = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+
+          processData(tipo, rows);
+          showMessage(`Base ${tipo} carregada com ${rows.length} registros!`, 'success');
+          saveSession();
+          refreshAllViews();
+        } catch(err) {
+          showMessage(`Erro ao processar ${tipo}: ${err.message}`, 'error');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // ============= PROCESSAMENTO DE DADOS COM REGRAS =============
+    function processData(tipo, rows) {
+      if (tipo === 'abertos') {
+        globalData.abertos = rows.map(r => ({
+          id: r.ID || r.id,
+          cliente: r.Cliente || r.cliente,
+          uf: (r.UF || r.uf || '').toUpperCase(),
+          cidade: r.Cidade || r.cidade,
+          dataAbertura: r.Data_Abertura || r.dataAbertura,
+          slahoras: parseFloat(r.SLA_Horas || r.slaHoras || 24),
+          tecnico: r.Técnico || r.tecnico,
+          substatus: r.Substatus || r.substatus || 'Pendente',
+          cluster: determineCluster(r.UF || r.uf, r.Cidade || r.cidade),
+          mopeps: determineMOPEPS(r.UF || r.uf, r.Cidade || r.cidade),
+          horasDecorridas: calculateHoursElapsed(r.Data_Abertura || r.dataAbertura),
+          faixaSLA: determineFaixaSLA(calculateHoursElapsed(r.Data_Abertura || r.dataAbertura), parseFloat(r.SLA_Horas || r.slaHoras || 24)),
+          statusSLA: calculateStatusSLA(calculateHoursElapsed(r.Data_Abertura || r.dataAbertura), parseFloat(r.SLA_Horas || r.slaHoras || 24))
+        }));
+        updateAbertosDashboard();
+      }
+
+      if (tipo === 'encerrados') {
+        globalData.encerrados = rows.map(r => {
+          const tempoResolucao = calculateHoursBetween(r.Data_Abertura || r.dataAbertura, r.Data_Encerramento || r.dataEncerramento);
+          const slaHoras = parseFloat(r.SLA_Horas || r.slaHoras || 24);
+          return {
+            protocolo: r.Protocolo || r.protocolo,
+            cliente: r.Cliente || r.cliente,
+            uf: (r.UF || r.uf || '').toUpperCase(),
+            cidade: r.Cidade || r.cidade,
+            dataAbertura: r.Data_Abertura || r.dataAbertura,
+            dataEncerramento: r.Data_Encerramento || r.dataEncerramento,
+            tempoResolucao: tempoResolucao,
+            causaRaiz: r.Causa_Raiz || r.causaRaiz || 'Não informado',
+            cluster: determineCluster(r.UF || r.uf, r.Cidade || r.cidade),
+            semana: getWeekISO(r.Data_Encerramento || r.dataEncerramento),
+            dentoPrazo: tempoResolucao <= slaHoras ? 1 : 0,
+            outlier: tempoResolucao > 24 ? 1 : 0
+          };
+        });
+        if (!globalData.rede.length) {
+          globalData.rede = deriveRedeFromEncerrados(globalData.encerrados);
+        }
+        updateEncerradosDashboard();
+        updateRedeDashboard();
+        updateRepetidosDashboard();
+      }
+
+      if (tipo === 'rede') {
+        globalData.rede = rows.map(r => ({
+          cluster: r.Cluster || r.cluster || 'Não classificado',
+          data: r.Data || r.data,
+          qtdRegistros: parseFloat(r.Qtd_Registros || r.qtdRegistros || 0),
+          tempoResposta: parseFloat(r.Tempo_Resposta || r.tempoResposta || 0),
+          tempoResolucao: parseFloat(r.Tempo_Resolucao || r.tempoResolucao || 0),
+          dentoPrazo: parseFloat(r.Qtd_Registros || r.qtdRegistros || 0) > 0 ? 1 : 0,
+          outlier: parseFloat(r.Tempo_Resposta || r.tempoResposta || 0) > 24 ? 1 : 0
+        }));
+        updateRedeDashboard();
+      }
+
+      if (tipo === 'ofs') {
+        globalData.ofs = rows.map(r => {
+          const tipo_atividade = (r.Tipo_Atividade || r.tipoAtividade || '').toLowerCase();
+          const isProdutivo = !['almoço', 'checklist', 'descanso', 'pause'].includes(tipo_atividade);
+          const status = r.Status || r.status || 'Pendente';
+
+          return {
+            tecnico: r.Técnico || r.tecnico,
+            data: r.Data || r.data,
+            tipoAtividade: tipo_atividade,
+            status: status,
+            uf: (r.UF || r.uf || '').toUpperCase(),
+            grupo: r.Grupo || r.grupo || 'Não informado',
+            isProdutivo: isProdutivo && status !== 'Cancelado',
+            isConcluido: status === 'Concluído' ? 1 : 0
+          };
+        });
+        updateOFSDashboard();
+      }
+
+      if (tipo === 'alelo') {
+        globalData.alelo = rows.map(r => {
+          const status = r.Status || r.status || 'Pendente';
+          const isAprovada = status === 'Aprovada';
+          return {
+            placa: r.Placa || r.placa,
+            condutor: r.Condutor || r.condutor,
+            dataTransacao: r.Data_Transacao || r.dataTransacao,
+            valor: parseFloat(r.Valor || r.valor || 0),
+            tipoCombustivel: r.Tipo_Combustivel || r.tipoCombustivel || 'Não informado',
+            status: status,
+            isValido: isAprovada
+          };
+        });
+        updateCombustivelDashboard();
+      }
+    }
+
+    // ============= FUNÇÕES DE CÁLCULO =============
+    function determineCluster(uf, cidade) {
+      uf = (uf || '').toUpperCase();
+      cidade = (cidade || '').toUpperCase();
+
+      if (uf === 'MA' && ['SÃO LUÍS', 'PAÇO DO LUMIAR', 'SÃO JOSÉ DE RIBAMAR'].includes(cidade)) return 'MA CAP';
+      if (uf === 'MA') return 'MA INT';
+      if (uf === 'PI' && cidade === 'TERESINA') return 'PI CAP';
+      if (uf === 'PI') return 'PI INT';
+      if (uf === 'PA' && ['BELÉM', 'ANANINDEUA'].includes(cidade)) return 'PA CAP';
+      if (uf === 'PA' && !['ALMEIRIM', 'SANTARÉM'].includes(cidade)) return 'PA INT';
+      if (uf === 'PA' && ['ALMEIRIM', 'SANTARÉM'].includes(cidade)) return 'NORTE';
+      if (['AP', 'AM'].includes(uf)) return 'NORTE';
+      return 'Não classificado';
+    }
+
+    function determineMOPEPS(uf, cidade) {
+      const cluster = determineCluster(uf, cidade);
+      if (['MA CAP', 'PA CAP', 'PA INT'].includes(cluster)) return 'EPS-SLN';
+      if (['MA INT', 'PI CAP', 'PI INT'].includes(cluster)) return 'MOP GIGA+';
+      if (cluster === 'NORTE') return 'EPS-ADX';
+      return 'Não classificado';
+    }
+
+    function calculateHoursElapsed(dataAbertura) {
+      if (!dataAbertura) return 0;
+      const data = new Date(dataAbertura);
+      const agora = new Date();
+      const diff = (agora - data) / (1000 * 3600);
+      return Math.max(0, diff);
+    }
+
+    function calculateHoursBetween(dataInicio, dataFim) {
+      if (!dataInicio || !dataFim) return 0;
+      const inicio = new Date(dataInicio);
+      const fim = new Date(dataFim);
+      const diff = (fim - inicio) / (1000 * 3600);
+      return Math.max(0, diff);
+    }
+
+    function determineFaixaSLA(horas, slaHoras) {
+      const percent = (horas / slaHoras) * 100;
+      if (percent <= 25) return 'Ótimo';
+      if (percent <= 50) return 'Bom';
+      if (percent <= 75) return 'Atenção';
+      if (percent <= 100) return 'Crítico';
+      return 'Violado';
+    }
+
+    function calculateStatusSLA(horas, slaHoras) {
+      return horas <= slaHoras ? 'Dentro SLA' : 'Violado';
+    }
+
+    function getWeekISO(data) {
+      if (!data) return 0;
+      const d = new Date(data);
+      const dayNum = d.getUTCDay() || 7;
+      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+
+    // ============= DASHBOARDS =============
+    function updateAbertosDashboard() {
+      const dados = globalData.abertos;
+      const total = dados.length;
+      const dentro = dados.filter(d => d.statusSLA === 'Dentro SLA').length;
+      const violado = dados.filter(d => d.statusSLA === 'Violado').length;
+      const idadeMedia = dados.length > 0 ? (dados.reduce((a,b) => a + b.horasDecorridas, 0) / dados.length).toFixed(1) : 0;
+
+      document.getElementById('abertos-total').textContent = total;
+      document.getElementById('abertos-sla').textContent = dentro;
+      document.getElementById('abertos-violado').textContent = violado;
+      document.getElementById('abertos-idade').textContent = idadeMedia + 'h';
+
+      const tbody = document.getElementById('abertos-table-body');
+      tbody.innerHTML = dados.slice(0, 50).map(d => `
+        <tr>
+          <td>${d.id}</td>
+          <td>${d.cliente}</td>
+          <td>${d.cluster}</td>
+          <td>${d.mopeps}</td>
+          <td>${new Date(d.dataAbertura).toLocaleDateString('pt-BR')}</td>
+          <td>${d.horasDecorridas.toFixed(1)}</td>
+          <td>${d.faixaSLA}</td>
+          <td><strong style="color: ${d.statusSLA === 'Dentro SLA' ? '#28a745' : '#dc3545'}">${d.statusSLA}</strong></td>
+        </tr>
+      `).join('');
+    }
+
+    function updateEncerradosDashboard() {
+      const dados = globalData.encerrados;
+      const total = dados.length;
+      const dentoPrazo = dados.filter(d => d.dentoPrazo === 1).length;
+      const outliers = dados.filter(d => d.outlier === 1).length;
+      const taxaPrazo = total > 0 ? ((dentoPrazo / total) * 100).toFixed(1) : 0;
+      const taxaOutlier = total > 0 ? ((outliers / total) * 100).toFixed(1) : 0;
+      const tempoMedio = total > 0 ? (dados.reduce((a,b) => a + b.tempoResolucao, 0) / total).toFixed(1) : 0;
+
+      document.getElementById('encerrados-total').textContent = total;
+      document.getElementById('encerrados-prazo').textContent = taxaPrazo + '%';
+      document.getElementById('encerrados-prazo-status').textContent = taxaPrazo >= 85 ? '✓ OK' : '⚠ Alerta';
+      document.getElementById('encerrados-prazo-status').className = taxaPrazo >= 85 ? 'metric-status status-ok' : 'metric-status status-warning';
+      document.getElementById('encerrados-outlier').textContent = taxaOutlier + '%';
+      document.getElementById('encerrados-outlier-status').textContent = taxaOutlier <= 4.9 ? '✓ OK' : '⚠ Alerta';
+      document.getElementById('encerrados-outlier-status').className = taxaOutlier <= 4.9 ? 'metric-status status-ok' : 'metric-status status-warning';
+      document.getElementById('encerrados-tempo').textContent = tempoMedio + 'h';
+
+      const tbody = document.getElementById('encerrados-table-body');
+      tbody.innerHTML = dados.slice(0, 50).map(d => `
+        <tr>
+          <td>${d.protocolo}</td>
+          <td>${d.cliente}</td>
+          <td>${d.cluster}</td>
+          <td>${d.tempoResolucao.toFixed(1)}</td>
+          <td>${d.tempoResolucao / (24) <= 1 ? '0-24h' : '24h+'}</td>
+          <td>${d.dentoPrazo === 1 ? '✓' : '✗'}</td>
+          <td>${d.outlier === 1 ? '✓' : '✗'}</td>
+          <td>${d.causaRaiz}</td>
+          <td>Sem ${d.semana}</td>
+        </tr>
+      `).join('');
+
+      // Gráfico de causas
+      const causas = {};
+      dados.forEach(d => {
+        causas[d.causaRaiz] = (causas[d.causaRaiz] || 0) + 1;
+      });
+
+      const top5 = Object.entries(causas).sort((a,b) => b[1] - a[1]).slice(0, 5);
+      renderChart('encerrados-causas-chart', 'bar', top5.map(c => c[0]), top5.map(c => c[1]), 'Top 5 Causas Raiz');
+    }
+
+    function updateRedeDashboard() {
+      const dados = globalData.rede;
+      const totalRegistros = dados.reduce((a,b) => a + b.qtdRegistros, 0);
+      const totalDento = dados.filter(d => d.dentoPrazo === 1).reduce((a,b) => a + b.qtdRegistros, 0);
+      const totalOutlier = dados.filter(d => d.outlier === 1).reduce((a,b) => a + b.qtdRegistros, 0);
+
+      const taxaPrazo = totalRegistros > 0 ? ((totalDento / totalRegistros) * 100).toFixed(1) : 0;
+      const taxaOutlier = totalRegistros > 0 ? ((totalOutlier / totalRegistros) * 100).toFixed(1) : 0;
+      const tme = dados.length > 0 ? (dados.reduce((a,b) => a + b.tempoResposta, 0) / dados.length).toFixed(1) : 0;
+      const tmr = dados.length > 0 ? (dados.reduce((a,b) => a + b.tempoResolucao, 0) / dados.length).toFixed(1) : 0;
+
+      document.getElementById('rede-prazo').textContent = taxaPrazo + '%';
+      document.getElementById('rede-prazo-status').textContent = taxaPrazo >= 85 ? '✓ OK' : '⚠ Alerta';
+      document.getElementById('rede-prazo-status').className = taxaPrazo >= 85 ? 'metric-status status-ok' : 'metric-status status-warning';
+      document.getElementById('rede-outlier').textContent = taxaOutlier + '%';
+      document.getElementById('rede-outlier-status').textContent = taxaOutlier <= 4.9 ? '✓ OK' : '⚠ Alerta';
+      document.getElementById('rede-outlier-status').className = taxaOutlier <= 4.9 ? 'metric-status status-ok' : 'metric-status status-warning';
+      document.getElementById('rede-tme').textContent = tme + 'h';
+      document.getElementById('rede-tme-status').textContent = tme <= 6 ? '✓ OK' : '⚠ Alerta';
+      document.getElementById('rede-tme-status').className = tme <= 6 ? 'metric-status status-ok' : 'metric-status status-warning';
+      document.getElementById('rede-tmr').textContent = tmr + 'h';
+
+      const tbody = document.getElementById('rede-table-body');
+      tbody.innerHTML = dados.slice(0, 20).map(d => `
+        <tr>
+          <td>${d.cluster}</td>
+          <td>${d.qtdRegistros}</td>
+          <td>${(d.dentoPrazo * 100).toFixed(1)}</td>
+          <td>${(d.outlier * 100).toFixed(1)}</td>
+          <td>${d.tempoResposta.toFixed(1)}</td>
+          <td>${d.tempoResolucao.toFixed(1)}</td>
+          <td>${d.tempoResposta <= 6 && d.outlier <= 0.049 ? '✓ OK' : '⚠'}</td>
+        </tr>
+      `).join('');
+    }
+
+    function updateOFSDashboard() {
+      const dados = globalData.ofs;
+      const tecnicos = {};
+
+      dados.forEach(d => {
+        if (!tecnicos[d.tecnico]) {
+          tecnicos[d.tecnico] = { total: 0, concluido: 0, uf: d.uf, grupo: d.grupo };
+        }
+        if (Number.isFinite(Number(d.total))) {
+          tecnicos[d.tecnico].total += Number(d.total || 0);
+          tecnicos[d.tecnico].concluido += Number(d.concluido ?? d.isConcluido ?? 0);
+        } else if (d.isProdutivo) {
+          tecnicos[d.tecnico].total++;
+          tecnicos[d.tecnico].concluido += Number(d.isConcluido || 0);
+        }
+      });
+
+      const totais = Object.values(tecnicos);
+      const totalAtividades = totais.reduce((a,b) => a + b.total, 0);
+      const totalConcluidas = totais.reduce((a,b) => a + b.concluido, 0);
+      const taxaMedia = totalAtividades > 0 ? ((totalConcluidas / totalAtividades) * 100).toFixed(1) : 0;
+      const alertas = totais.filter(t => (t.concluido / t.total * 100) < 70).length;
+
+      document.getElementById('ofs-total-tecnicos').textContent = totais.length;
+      document.getElementById('ofs-total-atividades').textContent = totalAtividades;
+      document.getElementById('ofs-taxa-media').textContent = taxaMedia + '%';
+      document.getElementById('ofs-alertas').textContent = alertas;
+
+      const tbody = document.getElementById('ofs-table-body');
+      tbody.innerHTML = Object.entries(tecnicos).map(([tecnico, stats]) => {
+        const taxa = stats.total > 0 ? ((stats.concluido / stats.total) * 100).toFixed(1) : 0;
+        const status = taxa >= 75 ? 'OK' : taxa >= 70 ? 'Atenção' : 'Crítico';
+        return `
+          <tr>
+            <td>${tecnico}</td>
+            <td>${stats.uf}</td>
+            <td>${stats.total}</td>
+            <td>${stats.concluido}</td>
+            <td><strong>${taxa}%</strong></td>
+            <td>${status}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function updateCombustivelDashboard() {
+      const dados = globalData.alelo.filter(d => d.isValido);
+      const consumo = dados.reduce((a,b) => a + b.valor, 0);
+      const frotas = new Set(dados.map(d => d.placa)).size;
+
+      document.getElementById('combustivel-saldo').textContent = 'R$ ' + consumo.toFixed(2);
+      document.getElementById('combustivel-frotas').textContent = frotas;
+      document.getElementById('combustivel-consumo').textContent = 'R$ ' + consumo.toFixed(2);
+      document.getElementById('combustivel-transacoes').textContent = dados.length;
+
+      const condutores = {};
+      dados.forEach(d => {
+        if (!condutores[d.condutor]) {
+          condutores[d.condutor] = { total: 0, qtd: 0, placa: d.placa };
+        }
+        condutores[d.condutor].total += d.valor;
+        condutores[d.condutor].qtd++;
+      });
+
+      const top10 = Object.entries(condutores)
+        .sort((a,b) => b[1].total - a[1].total)
+        .slice(0, 10);
+
+      const tbody = document.getElementById('combustivel-table-body');
+      tbody.innerHTML = top10.map(([condutor, stats]) => `
+        <tr>
+          <td>${condutor}</td>
+          <td>${stats.placa}</td>
+          <td>R$ ${stats.total.toFixed(2)}</td>
+          <td>${stats.qtd}</td>
+          <td>R$ ${(stats.total / stats.qtd).toFixed(2)}</td>
+        </tr>
+      `).join('');
+
+      const tipos = {};
+      dados.forEach(d => {
+        tipos[d.tipoCombustivel] = (tipos[d.tipoCombustivel] || 0) + d.valor;
+      });
+      renderChart('combustivel-chart', 'doughnut', Object.keys(tipos), Object.values(tipos), 'Consumo por Tipo');
+    }
+
+    function updateDashboard() {
+      document.getElementById('dash-abertos').textContent = globalData.abertos.length;
+      document.getElementById('dash-encerrados').textContent = globalData.encerrados.length;
+
+      if (globalData.encerrados.length > 0) {
+        const taxaPrazo = globalData.encerrados.filter(d => d.dentoPrazo === 1).length / globalData.encerrados.length * 100;
+        document.getElementById('dash-rede-prazo').textContent = taxaPrazo.toFixed(1) + '%';
+        document.getElementById('dash-rede-status').textContent = taxaPrazo >= 85 ? '✓' : '⚠';
+        document.getElementById('dash-rede-status').className = taxaPrazo >= 85 ? 'metric-status status-ok' : 'metric-status status-warning';
+      }
+
+      if (globalData.ofs.length > 0) {
+        const tecnicos = {};
+        globalData.ofs.forEach(d => {
+          if (!tecnicos[d.tecnico]) tecnicos[d.tecnico] = { total: 0, concluido: 0 };
+          if (d.isProdutivo) { tecnicos[d.tecnico].total++; tecnicos[d.tecnico].concluido += d.isConcluido; }
+        });
+        const taxa = Object.values(tecnicos).length > 0 ? Object.values(tecnicos).reduce((a,b) => a + b.concluido, 0) / Object.values(tecnicos).reduce((a,b) => a + b.total, 0) * 100 : 0;
+        document.getElementById('dash-ofs-taxa').textContent = taxa.toFixed(1) + '%';
+        document.getElementById('dash-ofs-status').textContent = taxa >= 75 ? '✓' : '⚠';
+        document.getElementById('dash-ofs-status').className = taxa >= 75 ? 'metric-status status-ok' : 'metric-status status-warning';
+      }
+
+      if (globalData.alelo.length > 0) {
+        const consumo = globalData.alelo.filter(d => d.isValido).reduce((a,b) => a + b.valor, 0);
+        document.getElementById('dash-combustivel').textContent = 'R$ ' + consumo.toFixed(2);
+      }
+    }
+
+    function updateDataSummary() {
+      const now = new Date().toLocaleString('pt-BR');
+      ['abertos','encerrados','rede','ofs','alelo'].forEach(tipo => {
+        const data = globalData[tipo] || [];
+        const status = document.getElementById(`status-${tipo}`);
+        const qtd = document.getElementById(`qtd-${tipo}`);
+        const date = document.getElementById(`data-${tipo}`);
+        if (!status || !qtd || !date) return;
+        status.innerHTML = data.length ? '<span style="color:#28a745;font-weight:600">Carregado</span>' : '<span style="color:#999;">Não carregado</span>';
+        qtd.textContent = data.length.toLocaleString('pt-BR');
+        date.textContent = data.length ? now : '—';
+      });
+    }
+
+    function updateRepetidosDashboard() {
+      const dados = globalData.encerrados || [];
+      const porCliente = {};
+      dados.forEach(d => {
+        const cliente = d.cliente || 'Não informado';
+        if (!porCliente[cliente]) porCliente[cliente] = {qtd:0,cluster:d.cluster || '-',causas:{}};
+        porCliente[cliente].qtd++;
+        porCliente[cliente].causas[d.causaRaiz || 'Não informado'] = (porCliente[cliente].causas[d.causaRaiz || 'Não informado'] || 0) + 1;
+      });
+
+      const repetidos = Object.entries(porCliente)
+        .filter(([,v]) => v.qtd > 1)
+        .sort((a,b) => b[1].qtd - a[1].qtd);
+      const causas = {};
+      repetidos.forEach(([,v]) => Object.entries(v.causas).forEach(([causa,qtd]) => causas[causa] = (causas[causa] || 0) + qtd));
+
+      document.getElementById('repetidos-total').textContent = repetidos.reduce((s,[,v]) => s + v.qtd, 0);
+      document.getElementById('repetidos-clientes').textContent = repetidos.length;
+      document.getElementById('repetidos-ofensores').textContent = repetidos.filter(([,v]) => v.qtd >= 3).length;
+
+      const tbody = document.getElementById('repetidos-table-body');
+      tbody.innerHTML = repetidos.length ? repetidos.slice(0,50).map(([cliente,v]) => {
+        const causa = Object.entries(v.causas).sort((a,b) => b[1] - a[1])[0]?.[0] || 'Não informado';
+        return `<tr><td>${cliente}</td><td>${v.qtd}</td><td>${v.cluster}</td><td>${causa}</td></tr>`;
+      }).join('') : '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: #999;">Sem clientes repetidos na base carregada</td></tr>';
+
+      const topCausas = Object.entries(causas).sort((a,b) => b[1] - a[1]).slice(0,5);
+      renderChart('repetidos-chart', 'bar', topCausas.map(c => c[0]), topCausas.map(c => c[1]), 'Causas de Repetição');
+    }
+
+    function renderChart(canvasId, type, labels, data, title) {
+      const ctx = document.getElementById(canvasId);
+      if (!ctx) return;
+
+      if (charts[canvasId]) charts[canvasId].destroy();
+
+      charts[canvasId] = new Chart(ctx, {
+        type: type,
+        data: { labels: labels, datasets: [{ label: title, data: data, backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8'] }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true } } }
+      });
+    }
+
+    function showMessage(msg, type) {
+      const container = document.getElementById('upload-messages');
+      const className = `${type}-message`;
+      container.innerHTML = `<div class="${className}">${msg}</div>`;
+      setTimeout(() => { container.innerHTML = ''; }, 4000);
+    }
+
+    function exportData() {
+      const ws_abertos = XLSX.utils.json_to_sheet(globalData.abertos.slice(0, 1000));
+      const ws_encerrados = XLSX.utils.json_to_sheet(globalData.encerrados.slice(0, 1000));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws_abertos, 'Abertos');
+      XLSX.utils.book_append_sheet(wb, ws_encerrados, 'Encerrados');
+      XLSX.writeFile(wb, 'jarvis_export.xlsx');
+    }
+
+    async function clearAllData() {
+      if (confirm('Tem certeza que deseja limpar todos os dados?')) {
+        globalData = { abertos: [], encerrados: [], rede: [], ofs: [], alelo: [], filtros: { abertos: {}, encerrados: {}, ofs: {}, rede: {} } };
+        document.querySelectorAll('input[type="file"]').forEach(f => f.value = '');
+        localStorage.removeItem('jarvis_mcll_completo');
+        await DB.open();
+        for (const store of ['abertos','encerrados','repetidos','ofs','transacoes','frota']) {
+          await DB.del(store,'data');
+        }
+        refreshAllViews();
+        showMessage('Todos os dados foram limpos', 'success');
+      }
+    }
+
+    function applyFilters(tipo) {}
+    function filterCluster(tipo, cluster) {
+      document.querySelectorAll('.cluster-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadStoredData().catch(err => showMessage(`Erro ao carregar dados salvos: ${err.message}`, 'error'));
     });
-    // um chamado é "repetido" se seu circuito OU seu cliente reincide (>1)
-    ST.repetidos=base.filter(r=>{
-      const np=String(r.numplan||'').trim();
-      const ci=String(r.clienteId||'').trim();
-      return (np && np!=='1' && np!=='0' && porPlano[np]>1) || (ci && porCliente[ci]>1);
-    }).map(r=>({...r,
-      reincPlano:porPlano[String(r.numplan||'').trim()]||0,
-      reincCliente:porCliente[String(r.clienteId||'').trim()]||0
-    }));
-    ST._repAggPlano=Object.entries(porPlano).filter(([,n])=>n>1).sort((a,b)=>b[1]-a[1]);
-    ST._repAggCliente=Object.entries(porCliente).filter(([,n])=>n>1).sort((a,b)=>b[1]-a[1]);
-    DB.set('repetidos','data',ST.repetidos);
-  },
-  renderRepetidos(){
-    if(!ST.repetidos.length){$('#repetidos-empty').style.display='';$('#repetidos-content').style.display='none';return;}
-    $('#repetidos-empty').style.display='none';$('#repetidos-content').style.display='';
-    const totalRep=ST.repetidos.length;
-    const nClientes=(ST._repAggCliente||[]).length;
-    const nCircuitos=(ST._repAggPlano||[]).length;
-    const topCli=(ST._repAggCliente||[])[0];
-    // nome do cliente do topo
-    const topCliNome=topCli?(ST.repetidos.find(r=>String(r.clienteId)===topCli[0])||{}).cliente||topCli[0]:'';
-    $('#rp-kpis').innerHTML=`
-      ${kpi('Chamados repetidos',totalRep,'balizado em Encerrados','warn')}
-      ${kpi('Clientes reincidentes',nClientes,'cliente_id',  'crit')}
-      ${kpi('Circuitos reincidentes',nCircuitos,'numplan',  'warn')}
-      ${kpi('Maior reincidência',topCli?topCli[1]+'×':'0',topCliNome.slice(0,28),  'crit')}`;
-    // tabela com colunas do padrão do painel
-    $('#rp-table').innerHTML=thead(['Protocolo','Cliente','UF/Cidade','Cluster','SLA (h)','Faixa','Reinc. cliente','Reinc. circuito','Causa Raiz','Semana'])+
-      '<tbody>'+ST.repetidos.sort((a,b)=>b.reincCliente-a.reincCliente).slice(0,500).map(r=>{
-        const cls=r.dentro8h?'ok':r.outlier24h?'crit':'warn';
-        return `<tr><td class="mono">${r.id}</td><td class="ellip">${r.cliente||''}</td><td class="ellip">${r.uf||''}/${r.cidade||''}</td>
-        <td>${r.cluster||''}</td><td class="mono">${(r.aging||0).toFixed(1)}</td><td><span class="pill ${faixaTxtCls(r.agingTxt)}">${r.agingTxt||'-'}</span></td>
-        <td><span class="pill ${r.reincCliente>=10?'crit':'warn'}">${r.reincCliente}×</span></td>
-        <td>${r.reincPlano>1?'<span class="pill warn">'+r.reincPlano+'×</span>':'-'}</td>
-        <td class="ellip">${r.causaRaiz||''}</td><td>${r.semana||''}</td></tr>`;}).join('')+'</tbody>';
-  },
+  </script>
 
-  /* ================= REDE (deriva de encerrados) ================= */
-  renderRede(){
-    const d=ST.encerrados;
-    const tbl=$('#rede-table');
-    // agrupa pelo cluster Rede: MA CAP · MA INT · PI · NORTE
-    const cls={};d.forEach(r=>{const k=r.clusterRede||clusterRede(r.cluster);(cls[k]=cls[k]||{t:0,ok:0,out:0,sumA:0}).t++;if(r.dentro8h)cls[k].ok++;if(r.outlier24h)cls[k].out++;cls[k].sumA+=(r.aging||0);});
-    const ordem=['MA CAP','MA INT','PI','NORTE'];
-    const names=Object.keys(cls).sort((a,b)=>{const ia=ordem.indexOf(a),ib=ordem.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib);});
-    if(names.length){
-      // KPIs gerais do Rede
-      const total=d.length, ok=d.filter(r=>r.dentro8h).length, out=d.filter(r=>r.outlier24h).length;
-      const pPrazo=total?ok/total*100:0, pOut=total?out/total*100:0, tme=total?d.reduce((s,r)=>s+(r.aging||0),0)/total:0;
-      const crit=d.filter(r=>r.outlier24h).length;
-      $('#rede-kpis').innerHTML=`
-        <div class="kpi ${statusClass(pPrazo,METAS.prazo)}"><div class="k-label">SLA prazo</div><div class="k-val">${PCT(pPrazo)}</div><div class="k-target">meta >= ${METAS.prazo}%</div></div>
-        <div class="kpi ${statusClass(pOut,METAS.outlier24h,true)}"><div class="k-label">Outlier +24h</div><div class="k-val">${PCT(pOut)}</div><div class="k-target">limite <= ${METAS.outlier24h}%</div></div>
-        <div class="kpi ${statusClass(tme,METAS.tme,true)}"><div class="k-label">TME</div><div class="k-val">${tme.toFixed(1)}h</div><div class="k-target">meta <= ${METAS.tme}h</div></div>
-        <div class="kpi ${crit>0?'crit':'ok'}"><div class="k-label">OS críticas</div><div class="k-val">${crit}</div><div class="k-target">outlier +24h</div></div>`;
-      tbl.innerHTML=thead(['Cluster','OS','Prazo','Outlier +24h','TME','Tendência'])+
-      '<tbody>'+names.map(c=>{const o=cls[c];const p=o.ok/o.t*100;const po=o.out/o.t*100;const tme=o.sumA/o.t;
-        return `<tr><td><b>${c}</b></td><td class="mono">${o.t}</td>
-          <td><span class="pill ${statusClass(p,METAS.prazo)}">${PCT(p)}</span></td>
-          <td><span class="pill ${statusClass(po,METAS.outlier24h,true)}">${PCT(po)}</span></td>
-          <td class="mono">${tme.toFixed(1)}h</td>
-          <td>${sparkline([p*.9,p*.95,p*1.02,p*.98,p])}</td></tr>`;}).join('')+'</tbody>';
-      const sems=[...new Set(d.map(r=>r.semana).filter(Boolean))].sort((a,b)=>(parseInt(String(a).replace(/\D/g,''))||0)-(parseInt(String(b).replace(/\D/g,''))||0));
-      const semOk=sems.map(s=>{const g=d.filter(r=>String(r.semana)===String(s));return g.length?g.filter(r=>r.dentro8h).length/g.length*100:0;});
-      chart('ch-rede-dia',{type:'line',data:{labels:sems.length?sems:['-'],datasets:[{data:semOk.length?semOk:[0],borderColor:cssv('--accent'),tension:.3,pointRadius:2,fill:false},
-        {data:sems.map(()=>METAS.prazo),borderColor:cssv('--warn'),borderDash:[5,5],pointRadius:0}]},options:baseOpt(false,'%')});
-      // composição por tipo (causa) como proxy backbone×acesso
-      const fibra=d.filter(r=>/fibra|rompiment/i.test(r.tipo||r.causaRaiz||'')).length;
-      chart('ch-rede-tipo',{type:'doughnut',data:{labels:['Rompimento fibra','Demais causas'],datasets:[{data:[fibra,d.length-fibra],backgroundColor:[cssv('--crit'),cssv('--neutral')],borderWidth:0}]},options:donutOpt()});
-    }else{
-      tbl.innerHTML='<tbody><tr><td style="padding:18px;color:var(--text-faint)">Importe a base de Encerrados para alimentar o Painel Rede.</td></tr></tbody>';
-    }
-  },
-
-  /* ================= OFS ================= */
-  async importOFS(file){
-    const rows=await readXLSX(file);
-    const map={};rows.forEach(r=>{const t=col(r,'tecnico','Tecnico','tecnico_campo','nome')||'-';
-      (map[t]=map[t]||{tec:t,total:0,concl:0,cluster:col(r,'cluster','Cluster')});
-      map[t].total++;const st=normaliza(col(r,'status','Status','situacao'));if(st.includes('CONCL')||st.includes('EXEC')||st.includes('FINAL'))map[t].concl++;});
-    ST.ofs=Object.values(map).sort((a,b)=>b.concl-a.concl);
-    await DB.set('ofs','data',ST.ofs);this.afterData('ofs');
-  },
-  renderOFS(){
-    if(!ST.ofs.length){$('#ofs-empty').style.display='';$('#ofs-content').style.display='none';return;}
-    $('#ofs-empty').style.display='none';$('#ofs-content').style.display='';
-    const totOS=ST.ofs.reduce((s,r)=>s+r.total,0), totC=ST.ofs.reduce((s,r)=>s+r.concl,0);
-    const tx=totOS?totC/totOS*100:0;
-    $('#ofs-kpis').innerHTML=`${kpi('Técnicos',ST.ofs.length,'',  'neutral')}
-      ${kpi('OS totais',totOS,'',  'neutral')}
-      ${kpi('Concluídas',totC,'',  'ok')}
-      ${kpi('Taxa de conclusão',PCT(tx),'',statusClass(tx,80))}`;
-    chart('ch-ofs',{type:'bar',data:{labels:ST.ofs.map(r=>r.tec),datasets:[{label:'Concluídas',data:ST.ofs.map(r=>r.concl),backgroundColor:cssv('--ok'),borderRadius:4},
-      {label:'Total',data:ST.ofs.map(r=>r.total),backgroundColor:cssv('--neutral-bg'),borderRadius:4}]},options:{...baseOpt(false),indexAxis:'y',plugins:{legend:{display:true,labels:{color:txtColor()}}}}});
-    $('#ofs-table').innerHTML=thead(['Técnico','Cluster','OS totais','Concluídas','Taxa'])+
-      '<tbody>'+ST.ofs.map(r=>{const t=r.total?r.concl/r.total*100:0;
-        return `<tr><td>${r.tec}</td><td>${r.cluster||'-'}</td><td class="mono">${r.total}</td><td class="mono">${r.concl}</td>
-        <td><span class="pill ${statusClass(t,80)}">${PCT(t)}</span></td></tr>`;}).join('')+'</tbody>';
-  },
-
-  /* ================= COMBUSTÍVEIS ================= */
-  renderCombustivel(){
-    const aportes=ST.movimentos.filter(m=>m.tipo==='aporte').reduce((s,m)=>s+m.val,0);
-    const retiradas=ST.movimentos.filter(m=>m.tipo==='retirada').reduce((s,m)=>s+m.val,0);
-    const geral=aportes-retiradas;
-    const veic=ST.frota.length;
-    $('#cb-saldo').textContent=BRL(geral);
-    $('#cb-geral').textContent=BRL(geral);
-    $('#cb-veic').textContent=veic;
-    $('#cb-rateio').textContent=BRL(veic?geral/veic:0);
-    // tabela rateio por superior
-    const sup={};ST.frota.forEach(v=>{(sup[v.superior||'-']=sup[v.superior||'-']||{n:0}).n++;});
-    const rate=veic?geral/veic:0;
-    $('#cb-rateio-table').innerHTML=thead(['Superior','Veículos','Rateio sugerido'])+
-      '<tbody>'+Object.entries(sup).map(([s,o])=>`<tr><td>${s}</td><td class="mono">${o.n}</td><td class="mono">${BRL(o.n*rate)}</td></tr>`).join('')+'</tbody>';
-  },
-  addMov(tipo){const v=parseFloat($('#'+(tipo==='aporte'?'ap':'rt')+'-val').value)||0;
-    const desc=$('#'+(tipo==='aporte'?'ap':'rt')+'-desc').value;
-    ST.movimentos.push({tipo,val:v,desc,ts:Date.now()});DB.set('movimentos','data',ST.movimentos);
-    this.closeModal();this.renderCombustivel();toast((tipo==='aporte'?'Aporte':'Retirada')+' registrado: '+BRL(v));},
-
-  /* ---- frota / veículos ---- */
-  addVeiculo(){const placa=$('#vc-placa').value.trim().toUpperCase();if(!placa)return;
-    ST.frota.push({placa,condutor:$('#vc-cond').value,superior:$('#vc-sup').value});
-    DB.set('frota','data',ST.frota);this.closeModal();this.renderCombustivel();
-    ATRIX_CONSUMO.render();toast('Veículo cadastrado: '+placa);},
-
-  /* ---- chamado manual ---- */
-  addManual(){const uf=$('#mn-uf').value,cid=$('#mn-cid').value;const cl=clusterDe(uf,cid);
-    ST.abertos.unshift({id:$('#mn-id').value,cliente:$('#mn-cli').value,uf,cidade:cid,cluster:cl,mop:mopEps(cl),
-      horas:0,faixa:'Até 4h',faixaCls:'ok',substatus:$('#mn-sub').value});
-    DB.set('abertos','data',ST.abertos);this.closeModal();this.afterData('abertos');toast('Chamado adicionado');},
-
-  /* ---- usuários ---- */
-  async renderUsers(){const users=await DB.get('config','users')||[{u:'mcll',p:'****'},{u:'marcellus',p:'****'}];
-    $('#users-list').innerHTML='<table>'+thead(['Usuário','Ação'])+'<tbody>'+users.map((x,i)=>`<tr><td>${x.u}</td><td><button class="btn ghost" onclick="App.delUser(${i})">remover</button></td></tr>`).join('')+'</tbody></table>';},
-  async addUser(){const users=await DB.get('config','users')||[];users.push({u:$('#us-u').value,p:$('#us-p').value});
-    await DB.set('config','users',users);this.renderUsers();toast('Usuário criado');},
-  async delUser(i){const users=await DB.get('config','users')||[];users.splice(i,1);await DB.set('config','users',users);this.renderUsers();},
-  addTec(){toast('Técnico adicionado: '+$('#tc-nome').value);this.closeModal();},
-
-  /* ---- backup ---- */
-  async saveBackupCfg(){await DB.set('config','backup',{url:$('#bk-url').value,auto:$('#bk-auto').checked});this.closeModal();toast('Configuração de backup salva');},
-  async backupNow(){const cfg=await DB.get('config','backup');if(!cfg?.url){toast('Configure a URL do Apps Script');return;}
-    try{await fetch(cfg.url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({abertos:ST.abertos})});toast('Snapshot enviado ao Sheets');}
-    catch(e){toast('Falha no envio - verifique a URL');}},
-  async saveWaUrl(){const u=$('#wa-url-in').value.trim();await DB.set('config','wa',u);$('#wa-link').href=u||'about:blank';this.closeModal();toast('URL do monitor salva');},
-
-  /* ---- report ---- */
-  genReport(){const sel=$$('#rep-checks input:checked').map(c=>c.value);
-    const w=window.open('','_blank');
-    if(!w){toast('Pop-up bloqueado. Permita pop-ups para gerar o relatório.');return;}
-    let html=`<html><head><title>Relatório Jarvis</title><style>body{font-family:Inter,sans-serif;padding:30px;color:#1A1D23}h1{font-size:20px}h2{font-size:14px;margin-top:22px;border-bottom:1px solid #ddd;padding-bottom:4px}table{border-collapse:collapse;width:100%;font-size:12px;margin-top:8px}td,th{border:1px solid #ddd;padding:5px 8px;text-align:left}</style><link rel="stylesheet" href="./painel-atrix-redesign.css">
-</head><body>`;
-    html+=`<h1>Painel Jarvis - Marcellus - Relatório consolidado</h1><p>${fmtDate(new Date())}</p>`;
-    if(sel.includes('abertos'))html+=`<h2>B2B Abertos (${ST.abertos.length})</h2>`+miniTbl(ST.abertos.slice(0,15),['id','cliente','cluster','faixa','substatus']);
-    if(sel.includes('encerrados'))html+=`<h2>B2B Encerrados (${ST.encerrados.length})</h2><p>Dentro de 8h: ${PCT(ST.encerrados.length?ST.encerrados.filter(r=>r.dentro8h).length/ST.encerrados.length*100:0)}</p>`;
-    if(sel.includes('repetidos'))html+=`<h2>B2B Repetidos (${ST.repetidos.length} clientes)</h2>`+miniTbl(ST.repetidos.slice(0,15),['cliente','uf','qtd']);
-    if(sel.includes('ofs'))html+=`<h2>Produtividade OFS</h2>`+miniTbl(ST.ofs.slice(0,15),['tec','total','concl']);
-    if(sel.includes('combustiveis'))html+=`<h2>Combustíveis</h2><p>Saldo: ${$('#cb-geral').textContent} · Veículos: ${ST.frota.length}</p>`;
-    html+=`<p style="margin-top:30px;color:#888;font-size:11px">© 2026 MCLL Monitoramento B2B · Wanderson Marcellus Penha Costa</p><script src="./painel-atrix-redesign.js"><\/script>
-</body></html>`;
-    w.document.write(html);w.document.close();setTimeout(()=>w.print(),400);},
-
-  /* ---- pós-importação ---- */
-  afterData(which){this.refreshCounters();
-    if(which==='abertos')this.renderAbertos();
-    if(which==='encerrados'){this.renderEncerrados();this.renderRede();this.renderRepetidos();}
-    if(which==='repetidos')this.renderRepetidos();
-    if(which==='ofs')this.renderOFS();
-    DB.get('config','backup').then(c=>{if(c?.auto&&c?.url)this.backupNow();});
-  },
-  async clear(which){await DB.del(which,'data');ST[which]=[];this.afterData(which);
-    if(which==='encerrados'){$('#encerrados-content').style.display='none';$('#encerrados-empty').style.display='';}
-    toast('Base '+which+' limpa');},
-
-  /* ---- boot ---- */
-  async init(){
-    this.initTheme();this.initTabs();
-    await DB.open();
-    ST.abertos=await DB.get('abertos','data')||[];
-    ST.encerrados=await DB.get('encerrados','data')||[];
-    ST.repetidos=await DB.get('repetidos','data')||[];
-    ST.ofs=await DB.get('ofs','data')||[];
-    ST.transacoes=await DB.get('transacoes','data')||[];
-    ST.frota=await DB.get('frota','data')||[];
-    ST.movimentos=await DB.get('movimentos','data')||[];
-    const wa=await DB.get('config','wa');if(wa)$('#wa-link').href=wa;
-    // uploads
-    $('#up-abertos').onchange=e=>this.importAbertos(e.target.files[0]);
-    $('#up-encerrados').onchange=e=>this.importEncerrados(e.target.files[0]);
-    $('#up-repetidos').onchange=e=>this.importRepetidos(e.target.files[0]);
-    $('#up-ofs').onchange=e=>this.importOFS(e.target.files[0]);
-    $('#up-transacoes').onchange=e=>ATRIX_CONSUMO.importar(e.target.files[0]);
-    $('#en-week').onchange=()=>this.renderEncerrados();
-    $$('.modal-bg').forEach(m=>m.onclick=e=>{if(e.target===m)this.closeModal();});
-    // render inicial
-    this.refreshCounters();this.renderAbertos();this.renderEncerrados();this.renderRepetidos();
-    this.renderRede();this.renderOFS();this.renderCombustivel();ATRIX_CONSUMO.render();
-    // acesso livre - sem login
-    $('#login').style.display='none';$('#app').style.display='block';
-  }
-};
-
-/* ============================================================
-   MÓDULO ISOLADO - ATRIX_CONSUMO (Transações Alelo)
-   Balizado pela frota cadastrada (ST.frota). Só T = "Aprovada".
-   ============================================================ */
-const ATRIX_CONSUMO=(function(){
-  async function importar(file){
-    if(!file)return;
-    const rows=await readXLSX(file);
-    const placasFrota=new Set(ST.frota.map(v=>normaliza(v.placa)));
-    const supDe={};ST.frota.forEach(v=>supDe[normaliza(v.placa)]=v.superior||'-');
-    const aprov=rows.filter(r=>/aprovad/i.test(String(col(r,'T','Transacao','status','situacao'))));
-    const consol={};
-    aprov.forEach(r=>{const placa=normaliza(col(r,'Placa','placa','AB'));
-      if(placasFrota.size&&!placasFrota.has(placa))return; // baliza pela frota
-      const val=parseFloat(String(col(r,'Valor','AD','valor','total')).replace(/[^\d,.-]/g,'').replace('.','').replace(',','.'))||0;
-      (consol[placa]=consol[placa]||{placa,sup:supDe[placa]||'-',val:0,n:0});consol[placa].val+=val;consol[placa].n++;});
-    ST.transacoes=Object.values(consol).sort((a,b)=>b.val-a.val);
-    await DB.set('transacoes','data',ST.transacoes);render();toast('Transações recalculadas: '+ST.transacoes.length+' placas');
-  }
-  function render(){
-    const block=$('#tr-block'),empty=$('#tr-empty');if(!block)return;
-    if(!ST.transacoes.length){block.style.display='none';empty.style.display='';return;}
-    block.style.display='';empty.style.display='none';
-    const total=ST.transacoes.reduce((s,r)=>s+r.val,0);
-    const nTx=ST.transacoes.reduce((s,r)=>s+r.n,0);
-    $('#tr-kpis').innerHTML=`${kpi('Total aprovado',BRL(total),'',  'neutral')}
-      ${kpi('Placas com consumo',ST.transacoes.length,'',  'neutral')}
-      ${kpi('Transações',nTx,'',  'neutral')}
-      ${kpi('Ticket médio',BRL(nTx?total/nTx:0),'por transação','neutral')}`;
-    // por superior
-    const sup={};ST.transacoes.forEach(r=>sup[r.sup]=(sup[r.sup]||0)+r.val);
-    chart('ch-tr-sup',{type:'bar',data:{labels:Object.keys(sup),datasets:[{data:Object.values(sup),backgroundColor:cssv('--accent'),borderRadius:5}]},options:baseOpt(true,'R$')});
-    const top=ST.transacoes.slice(0,10);
-    chart('ch-tr-placa',{type:'bar',data:{labels:top.map(r=>r.placa),datasets:[{data:top.map(r=>r.val),backgroundColor:cssv('--ok'),borderRadius:5}]},options:{...baseOpt(false,'R$'),indexAxis:'y'}});
-    $('#tr-table').innerHTML=thead(['Placa','Superior','Transações','Valor total'])+
-      '<tbody>'+ST.transacoes.map(r=>`<tr><td class="mono">${r.placa}</td><td>${r.sup}</td><td class="mono">${r.n}</td><td class="mono">${BRL(r.val)}</td></tr>`).join('')+'</tbody>';
-  }
-  function exportExcel(){
-    if(!ST.transacoes.length){toast('Sem transações para exportar');return;}
-    const wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(ST.transacoes.map(r=>({Placa:r.placa,Superior:r.sup,Transacoes:r.n,Valor:r.val}))),'Por Placa');
-    const sup={};ST.transacoes.forEach(r=>sup[r.sup]=(sup[r.sup]||0)+r.val);
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(Object.entries(sup).map(([Superior,Valor])=>({Superior,Valor}))),'Por Superior');
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(ST.frota.map(v=>({Placa:v.placa,Condutor:v.condutor,Superior:v.superior}))),'Frota');
-    XLSX.writeFile(wb,'transacoes_alelo.xlsx');toast('Excel exportado');
-  }
-  return{importar,render,exportExcel,recalcular:render};
-})();
-
-/* ---------- helpers de render ---------- */
-function kpi(label,val,target,cls){return `<div class="kpi ${cls||'neutral'}"><div class="k-label">${label}</div><div class="k-val">${val}</div>${target?`<div class="k-target">${target}</div>`:'<div class="k-target">&nbsp;</div>'}</div>`;}
-function thead(cols){return '<thead><tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr></thead>';}
-function faixaTxtCls(txt){const t=normaliza(txt);
-  if(t.includes('ATE 4')||t==='ENTRE 4H E 8H'||t.includes('4H E 8'))return'ok';
-  if(t.includes('8H E 12')||t.includes('12H E 24'))return'warn';
-  if(t.includes('MAIOR')||t.includes('24'))return'crit';
-  return'neutral';}
-function miniTbl(rows,keys){if(!rows.length)return'<p>Sem dados.</p>';return '<table><tr>'+keys.map(k=>`<th>${k}</th>`).join('')+'</tr>'+rows.map(r=>'<tr>'+keys.map(k=>`<td>${r[k]??''}</td>`).join('')+'</tr>').join('')+'</table>';}
-function sparkline(vals){const w=90,h=26,max=Math.max(...vals),min=Math.min(...vals),rng=max-min||1;
-  const pts=vals.map((v,i)=>`${(i/(vals.length-1))*w},${h-((v-min)/rng)*(h-4)-2}`).join(' ');
-  return `<svg class="spark" viewBox="0 0 ${w} ${h}"><polyline points="${pts}" fill="none" stroke="${cssv('--accent')}" stroke-width="1.5"/></svg>`;}
-function baseOpt(grid,unit){return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${unit==='%'?c.parsed.y?.toFixed(1)+'%':unit==='R$'?BRL(c.parsed.y??c.parsed.x):(c.parsed.y??c.parsed.x)}`}}},
-  scales:{x:{grid:{display:false},ticks:{color:txtColor(),font:{size:10}}},y:{grid:{color:gridColor()},ticks:{color:txtColor(),font:{size:10}}}}};}
-function donutOpt(){return{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:{color:txtColor(),font:{size:11},boxWidth:10}}}};}
-
-document.addEventListener('DOMContentLoaded',()=>App.init());
-</script>
-<script src="./painel-atrix-redesign.js"></script>
 </body>
 </html>
